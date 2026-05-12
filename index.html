@@ -453,6 +453,28 @@
     .todo-status-btn.in-process  { background: #FEF3C7; color: #92400E; }
     .todo-status-btn.completed   { background: var(--tulip-pale); color: var(--tulip-dark); }
 
+    /* ── LOCK SCREEN ─────────────────────────────────────────────── */
+    #lock-screen {
+      position: fixed; inset: 0; z-index: 9999; background: var(--midnight);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    }
+    #lock-screen.hidden { display: none; }
+    .lock-logo  { font-size: 36px; margin-bottom: 4px; }
+    .lock-title { color: #fff; font-size: 18px; font-weight: 700; }
+    .lock-sub   { color: rgba(255,255,255,.4); font-size: 13px; margin-bottom: 8px; }
+    .lock-input {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px; padding: 12px 16px; color: #fff; font-size: 15px;
+      width: 280px; text-align: center; letter-spacing: .08em; outline: none;
+    }
+    .lock-input:focus { border-color: var(--tulip); }
+    .lock-btn {
+      background: var(--tulip); color: #fff; border: none; border-radius: 8px;
+      padding: 12px 0; font-size: 14px; font-weight: 600; cursor: pointer; width: 280px;
+    }
+    .lock-btn:hover { background: var(--tulip-dark); }
+    .lock-error { color: #ff6b6b; font-size: 12px; min-height: 16px; }
+
     /* ── DONE OVERLAY ────────────────────────────────────────────── */
     #done-overlay {
       display: none; position: fixed; inset: 0;
@@ -468,6 +490,16 @@
   </style>
 </head>
 <body>
+
+<div id="lock-screen">
+  <div class="lock-logo">🌷</div>
+  <div class="lock-title">Tulip Weekly OS</div>
+  <div class="lock-sub">Enter password to continue</div>
+  <input class="lock-input" type="password" id="lock-input" placeholder="Password"
+         onkeydown="if(event.key==='Enter') checkPassword()" />
+  <div class="lock-error" id="lock-error"></div>
+  <button class="lock-btn" onclick="checkPassword()">Unlock</button>
+</div>
 
 <!-- ══ SIDEBAR ══════════════════════════════════════════════════════ -->
 <aside class="sidebar">
@@ -836,6 +868,12 @@
 <script>
 /* ══ CONFIG ══════════════════════════════════════════════════════ */
 const SYNC_URL = 'https://script.google.com/macros/s/AKfycbxPnAZien-_h41lpDHJ89QkSZSSrVkOC-vdufzmJcHaesSYxFQoIZAuQT-5YkunuW5kOQ/exec';
+const LOCK_PASSWORD = 'tulip2025'; // Change this to your preferred password
+
+// Auto-unlock if already authenticated this browser session
+if (sessionStorage.getItem('tulip-unlocked') === '1') {
+  document.getElementById('lock-screen').classList.add('hidden');
+}
 
 /* ══ DATA ════════════════════════════════════════════════════════ */
 const SECTIONS = [
@@ -972,7 +1010,9 @@ function init() {
     document.getElementById('sync-label').textContent = 'Connecting…';
     loadConfig();
     loadFromSheets();
-    setInterval(() => { loadConfig(); loadFromSheets(); }, 60000);
+    loadIssues();
+    loadTodos();
+    setInterval(() => { loadConfig(); loadFromSheets(); loadIssues(); loadTodos(); }, 60000);
   }
 }
 
@@ -1358,6 +1398,18 @@ function hideEmptyWeekCols() {
     }
   });
 }
+/* ══ LOCK ════════════════════════════════════════════════════════ */
+function checkPassword() {
+  const val = document.getElementById('lock-input').value;
+  if (val === LOCK_PASSWORD) {
+    document.getElementById('lock-screen').classList.add('hidden');
+    sessionStorage.setItem('tulip-unlocked', '1');
+  } else {
+    document.getElementById('lock-error').textContent = 'Incorrect password';
+    document.getElementById('lock-input').value = '';
+  }
+}
+
 /* ══ SYNC ════════════════════════════════════════════════════════ */
 function syncSheet(params) {
   if (!SYNC_URL) return;
@@ -1444,6 +1496,83 @@ function loadFromSheets() {
   script.src = SYNC_URL + '?action=getData&callback=' + cb;
   script.onerror = () => { delete window[cb]; if (label) label.textContent = 'Offline'; };
   document.head.appendChild(script);
+}
+
+function loadIssues() {
+  if (!SYNC_URL) return;
+  const cb = 'iss_' + Date.now();
+  const script = document.createElement('script');
+  window[cb] = function(data) {
+    delete window[cb];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    if (!data.ok || !data.rows) return;
+    applyIssues(data.rows);
+  };
+  script.src = SYNC_URL + '?action=getIssues&callback=' + cb;
+  script.onerror = () => { delete window[cb]; };
+  document.head.appendChild(script);
+}
+
+function applyIssues(rows) {
+  const SKIP = ['issue', 'title', 'owner', 'priority', 'status', 'notes', '#'];
+  const data = rows.filter(r => {
+    const cell = String(r[1] || '').trim().toLowerCase();
+    return cell && !SKIP.includes(cell);
+  });
+  if (!data.length) return;
+  issues = data.map((r, i) => {
+    const priStr   = String(r[3] || '').toLowerCase();
+    const notesStr = String(r[4] || '').trim();
+    const completed = notesStr.includes('✅');
+    return {
+      id: i,
+      title:     String(r[1] || '').trim(),
+      owner:     String(r[2] || '').trim(),
+      priority:  priStr.includes('high') ? 'high' : priStr.includes('low') ? 'low' : 'medium',
+      notes:     completed ? '' : notesStr,
+      completed,
+    };
+  });
+  renderIssues();
+}
+
+function loadTodos() {
+  if (!SYNC_URL) return;
+  const cb = 'td_' + Date.now();
+  const script = document.createElement('script');
+  window[cb] = function(data) {
+    delete window[cb];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    if (!data.ok || !data.rows) return;
+    applyTodos(data.rows);
+  };
+  script.src = SYNC_URL + '?action=getTodos&callback=' + cb;
+  script.onerror = () => { delete window[cb]; };
+  document.head.appendChild(script);
+}
+
+function applyTodos(rows) {
+  const SKIP = ['action', 'todo', 'task', 'owner', 'due', 'status', '#'];
+  const data = rows.filter(r => {
+    const cell = String(r[1] || '').trim().toLowerCase();
+    return cell && !SKIP.includes(cell);
+  });
+  if (!data.length) return;
+  todos = data.map((r, i) => {
+    const statStr = String(r[4] || '').toLowerCase();
+    const status  = statStr.includes('done') || statStr.includes('✅') ? 'completed'
+                  : statStr.includes('process') ? 'in-process'
+                  : 'not-started';
+    return {
+      id: i,
+      text:  String(r[1] || '').trim(),
+      owner: String(r[2] || '').trim(),
+      due:   String(r[3] || '').trim(),
+      status,
+      done: status === 'completed',
+    };
+  });
+  renderTodos();
 }
 
 /* ══ KEYBOARD ════════════════════════════════════════════════════ */
