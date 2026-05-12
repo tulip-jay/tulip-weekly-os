@@ -995,8 +995,11 @@ let issues = [
 ];
 
 let todos = [
-  { id:0, text:'Physical count adjustments effecting GPM', owner:'', due:'', status:'not-started', done:false },
+  { id:0, text:'Physical count adjustments effecting GPM', owner:'', due:'', status:'not-started' },
 ];
+
+/* ── Cached DOM refs (set in init) ── */
+let elTimerDisplay, elTimerProg, elMeetingElapsed, elMeetingBar, elSyncDot, elSyncLabel, elCaptureModal, elCaptureFab;
 
 /* ══ TIMER ═══════════════════════════════════════════════════════ */
 let currentIdx    = 0;
@@ -1013,21 +1016,16 @@ function renderTimer() {
   const sign = timerSecs < 0 ? '-' : '';
   const m    = Math.floor(abs / 60);
   const s    = abs % 60;
-  const el   = document.getElementById('timer-display');
-  const prog = document.getElementById('timer-prog');
-
-  el.textContent = `${sign}${m}:${s.toString().padStart(2,'0')}`;
-  el.classList.remove('warning','over');
-  prog.classList.remove('warning','over');
-
+  elTimerDisplay.textContent = `${sign}${m}:${s.toString().padStart(2,'0')}`;
+  elTimerDisplay.classList.remove('warning','over');
+  elTimerProg.classList.remove('warning','over');
   const pct = Math.min(100, Math.max(0, timerSecs / (SECTIONS[currentIdx].mins * 60) * 100));
   if (timerSecs < 0) {
-    el.classList.add('over'); prog.classList.add('over'); prog.style.width = '100%';
+    elTimerDisplay.classList.add('over'); elTimerProg.classList.add('over'); elTimerProg.style.width = '100%';
   } else if (timerSecs <= 120) {
-    el.classList.add('warning'); prog.classList.add('warning');
-    prog.style.width = pct + '%';
+    elTimerDisplay.classList.add('warning'); elTimerProg.classList.add('warning'); elTimerProg.style.width = pct + '%';
   } else {
-    prog.style.width = pct + '%';
+    elTimerProg.style.width = pct + '%';
   }
 }
 
@@ -1052,8 +1050,8 @@ function stopTimer() {
 function tickMeeting() {
   totalElapsed++;
   const m = Math.floor(totalElapsed/60), s = totalElapsed%60;
-  document.getElementById('total-elapsed').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  document.getElementById('meeting-bar').style.width = Math.min(100, totalElapsed/(TOTAL_MINS*60)*100) + '%';
+  elMeetingElapsed.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  elMeetingBar.style.width = Math.min(100, totalElapsed/(TOTAL_MINS*60)*100) + '%';
 }
 
 function nextSection() {
@@ -1070,7 +1068,15 @@ function nextSection() {
 
 /* ══ NAVIGATION ══════════════════════════════════════════════════ */
 function init() {
-  // Apply cached section times before first render to avoid flash
+  elTimerDisplay  = document.getElementById('timer-display');
+  elTimerProg     = document.getElementById('timer-prog');
+  elMeetingElapsed= document.getElementById('total-elapsed');
+  elMeetingBar    = document.getElementById('meeting-bar');
+  elSyncDot       = document.getElementById('sync-dot');
+  elSyncLabel     = document.getElementById('sync-label');
+  elCaptureModal  = document.getElementById('capture-modal');
+  elCaptureFab    = document.getElementById('capture-fab');
+
   const cachedMins = localStorage.getItem('tulip-section-mins');
   if (cachedMins) {
     try {
@@ -1081,7 +1087,7 @@ function init() {
         }
       });
       TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
-    } catch(e) {}
+    } catch(e) { console.warn('tulip: failed to restore section timings', e); }
   }
 
   buildNav();
@@ -1095,7 +1101,7 @@ function init() {
   markLatestWeekHead();
   goToSection(0);
   if (SYNC_URL) {
-    document.getElementById('sync-label').textContent = 'Connecting…';
+    if (elSyncLabel) elSyncLabel.textContent = 'Connecting…';
     loadConfig();
     loadFromSheets();
     loadIssues();
@@ -1168,8 +1174,7 @@ function toggleRockStatus(id) {
   const r = rocks.find(x => x.id === id);
   r.status = r.status === 'on-track' ? 'off-track' : 'on-track';
   renderRocks();
-  syncSheet({ action: 'updateRockStatus', rockTitle: r.title, status: r.status });
-  flashSync();
+  sync({ action: 'updateRockStatus', rockTitle: r.title, status: r.status });
 }
 
 /* ══ GOALS ═══════════════════════════════════════════════════════ */
@@ -1195,8 +1200,7 @@ function toggleGoalStatus(person) {
   const g = goals.find(x => x.person === person);
   g.status = g.status === 'on-track' ? 'off-track' : 'on-track';
   renderGoals();
-  syncSheet({ action: 'updateGoalStatus', person: g.person, status: g.status });
-  flashSync();
+  sync({ action: 'updateGoalStatus', person: g.person, status: g.status });
 }
 
 /* ══ ISSUES ══════════════════════════════════════════════════════ */
@@ -1277,6 +1281,7 @@ function saveIssueTitle(id, value) {
   const issue = issues.find(x => x.id === id);
   if (!issue) return;
   if (!value.trim()) {
+    sync({ action: 'deleteIssue', issueTitle: issue.title });
     issues = issues.filter(x => x.id !== id);
     renderIssues();
     return;
@@ -1284,8 +1289,7 @@ function saveIssueTitle(id, value) {
   const oldTitle = issue.title;
   issue.title = value.trim();
   if (oldTitle !== issue.title) {
-    syncSheet({ action: 'updateIssueTitle', oldTitle, newTitle: issue.title });
-    flashSync();
+    sync({ action: 'updateIssueTitle', oldTitle, newTitle: issue.title });
   }
 }
 
@@ -1293,8 +1297,7 @@ function saveIssueNotes(id, value) {
   const issue = issues.find(x => x.id === id);
   if (!issue) return;
   issue.notes = value;
-  syncSheet({ action: 'updateIssueNotes', issueTitle: issue.title, notes: value });
-  flashSync();
+  sync({ action: 'updateIssueNotes', issueTitle: issue.title, notes: value });
 }
 
 function priorityClass(p) { return 'priority-' + p; }
@@ -1312,39 +1315,51 @@ function toggleIssueComplete(id) {
   issue.completed = !issue.completed;
   sortIssues();
   renderIssues();
-  syncSheet({ action: 'markIssueComplete', issueTitle: issue.title, completed: String(issue.completed) });
-  flashSync();
+  sync({ action: 'markIssueComplete', issueTitle: issue.title, completed: String(issue.completed) });
 }
 
 /* ── Drag & Drop ── */
 let dragSrcIdx = null;
+let dragSrcEl  = null;
+let dragOverEl = null;
 
 function dragStart(e, idx) {
   dragSrcIdx = idx;
-  e.target.closest('.issue-card').classList.add('dragging');
+  dragSrcEl  = e.target.closest('.issue-card');
+  dragSrcEl?.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
 }
 function dragOver(e) {
   e.preventDefault();
-  e.target.closest('.issue-card')?.classList.add('drag-over');
+  const card = e.target.closest('.issue-card');
+  if (card && card !== dragOverEl) {
+    dragOverEl?.classList.remove('drag-over');
+    dragOverEl = card;
+    card.classList.add('drag-over');
+  }
   e.dataTransfer.dropEffect = 'move';
 }
 function dragLeave(e) {
-  e.target.closest('.issue-card')?.classList.remove('drag-over');
+  const card = e.target.closest('.issue-card');
+  if (card === dragOverEl && !card?.contains(e.relatedTarget)) {
+    card.classList.remove('drag-over');
+    dragOverEl = null;
+  }
 }
 function dragDrop(e, toIdx) {
   e.stopPropagation();
-  e.target.closest('.issue-card')?.classList.remove('drag-over');
+  dragOverEl?.classList.remove('drag-over');
+  dragOverEl = null;
   if (dragSrcIdx !== null && dragSrcIdx !== toIdx) {
     const moved = issues.splice(dragSrcIdx, 1)[0];
     issues.splice(toIdx, 0, moved);
     renderIssues();
   }
 }
-function dragEnd(e) {
-  document.querySelectorAll('.issue-card').forEach(el => {
-    el.classList.remove('dragging','drag-over');
-  });
+function dragEnd() {
+  dragSrcEl?.classList.remove('dragging');
+  dragOverEl?.classList.remove('drag-over');
+  dragSrcEl = dragOverEl = null;
   dragSrcIdx = null;
 }
 
@@ -1387,56 +1402,49 @@ function renderTodos() {
 function toggleTodoDone(id) {
   const t = todos.find(x => x.id === id);
   t.status = t.status === 'completed' ? 'not-started' : 'completed';
-  t.done = t.status === 'completed';
   renderTodos();
-  syncSheet({ action: 'markTodoDone', todoText: t.text, status: t.status });
-  flashSync();
+  sync({ action: 'markTodoDone', todoText: t.text, status: t.status });
 }
 
 function cycleTodoStatus(id) {
   const t = todos.find(x => x.id === id);
   const cycle = ['not-started', 'in-process', 'completed'];
   t.status = cycle[(cycle.indexOf(t.status) + 1) % cycle.length];
-  t.done = t.status === 'completed';
   renderTodos();
-  syncSheet({ action: 'markTodoDone', todoText: t.text, status: t.status });
-  flashSync();
+  sync({ action: 'markTodoDone', todoText: t.text, status: t.status });
 }
 
 function saveTodoField(id, field, value) {
   const t = todos.find(x => x.id === id);
   if (!t) return;
   if (field === 'text' && !value.trim()) {
+    sync({ action: 'deleteTodo', todoText: t.text });
     todos = todos.filter(x => x.id !== id);
     renderTodos();
     return;
   }
   t[field] = value;
   if (field === 'owner' || field === 'due') {
-    syncSheet({ action: 'updateTodoField', todoText: t.text, field, value });
-    flashSync();
+    sync({ action: 'updateTodoField', todoText: t.text, field, value });
   }
 }
 
 /* ── Capture popup ── */
 function openCapture(tab) {
-  const modal = document.getElementById('capture-modal');
-  const isOpen = modal.classList.contains('open');
+  const isOpen = elCaptureModal?.classList.contains('open');
   if (isOpen && !tab) { closeCapture(); return; }
   switchCaptureTab(tab || 'issue');
-  modal.classList.add('open');
+  elCaptureModal?.classList.add('open');
   const focusId = tab === 'todo' ? 'cap-todo-text' : 'cap-issue-title';
-  setTimeout(() => document.getElementById(focusId).focus(), 50);
+  requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(focusId).focus()));
 }
 
 function closeCapture() {
-  document.getElementById('capture-modal').classList.remove('open');
+  elCaptureModal?.classList.remove('open');
 }
 
 document.addEventListener('click', e => {
-  const modal = document.getElementById('capture-modal');
-  const fab   = document.getElementById('capture-fab');
-  if (modal.classList.contains('open') && !modal.contains(e.target) && e.target !== fab) {
+  if (elCaptureModal?.classList.contains('open') && !elCaptureModal.contains(e.target) && e.target !== elCaptureFab) {
     closeCapture();
   }
 
@@ -1471,8 +1479,7 @@ function submitCaptureIssue() {
 
   issues.push({ id: Date.now(), title, owner, priority, notes, completed: false });
   renderIssues();
-  syncSheet({ action: 'addIssue', title, owner, priority, notes });
-  flashSync();
+  sync({ action: 'addIssue', title, owner, priority, notes });
 
   document.getElementById('cap-issue-title').value = '';
   document.getElementById('cap-issue-owner').value = '';
@@ -1487,10 +1494,9 @@ function submitCaptureTodo() {
   const due   = document.getElementById('cap-todo-due').value;
   if (!text) { document.getElementById('cap-todo-text').focus(); return; }
 
-  todos.push({ id: Date.now(), text, owner, due, status: 'not-started', done: false });
+  todos.push({ id: Date.now(), text, owner, due, status: 'not-started' });
   renderTodos();
-  syncSheet({ action: 'addTodo', text, owner, due, status: 'not-started' });
-  flashSync();
+  sync({ action: 'addTodo', text, owner, due, status: 'not-started' });
 
   document.getElementById('cap-todo-text').value = '';
   document.getElementById('cap-todo-owner').value = '';
@@ -1585,25 +1591,21 @@ function hideEmptyWeekCols() {
 }
 
 /* ══ SYNC ════════════════════════════════════════════════════════ */
-function syncSheet(params) {
+function sync(params) {
   if (!SYNC_URL) return;
-  const url = SYNC_URL + '?' + new URLSearchParams(params).toString();
-  fetch(url, { mode: 'no-cors' }).catch(() => {});
-}
-
-function flashSync() {
-  const dot   = document.getElementById('sync-dot');
-  const label = document.getElementById('sync-label');
+  fetch(SYNC_URL + '?' + new URLSearchParams(params).toString(), { mode: 'no-cors' }).catch(() => {});
+  const dot = elSyncDot, label = elSyncLabel;
   if (!dot) return;
   dot.classList.add('flash');
   if (label) label.textContent = 'Saved';
-  setTimeout(() => {
-    dot.classList.remove('flash');
-    if (label) label.textContent = 'Synced';
-  }, 1200);
+  setTimeout(() => { dot.classList.remove('flash'); if (label) label.textContent = 'Synced'; }, 1200);
 }
 
+let lastScorecardHash = null;
 function renderScorecard(rows) {
+  const hash = JSON.stringify(rows);
+  if (hash === lastScorecardHash) return;
+  lastScorecardHash = hash;
   const table = document.querySelector('table.sc');
   const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
@@ -1683,19 +1685,22 @@ function renderScorecard(rows) {
   markLatestWeekHead();
 }
 
-function loadConfig() {
+function jsonpLoad(action, onData) {
   if (!SYNC_URL) return;
-  const cb = 'cfg_' + Date.now();
+  const cb = 'cb_' + Date.now();
   const script = document.createElement('script');
   window[cb] = function(data) {
     delete window[cb];
-    if (script.parentNode) script.parentNode.removeChild(script);
-    if (!data.ok || !data.rows) return;
-    applyConfig(data.rows);
+    script.parentNode?.removeChild(script);
+    onData(data);
   };
-  script.src = SYNC_URL + '?action=getConfig&callback=' + cb;
-  script.onerror = () => { delete window[cb]; };
+  script.onerror = () => { delete window[cb]; script.parentNode?.removeChild(script); };
+  script.src = SYNC_URL + '?action=' + action + '&callback=' + cb;
   document.head.appendChild(script);
+}
+
+function loadConfig() {
+  jsonpLoad('getConfig', data => { if (data.ok && data.rows) applyConfig(data.rows); });
 }
 
 function applyConfig(rows) {
@@ -1722,37 +1727,15 @@ function applyConfig(rows) {
 }
 
 function loadFromSheets() {
-  if (!SYNC_URL) return;
-  const label = document.getElementById('sync-label');
-  const cb = 'sc_' + Date.now();
-  const script = document.createElement('script');
-
-  window[cb] = function(data) {
-    delete window[cb];
-    if (script.parentNode) script.parentNode.removeChild(script);
-    if (!data.ok) { if (label) label.textContent = 'Offline'; return; }
+  jsonpLoad('getData', data => {
+    if (!data.ok) { if (elSyncLabel) elSyncLabel.textContent = 'Offline'; return; }
     renderScorecard(data.rows);
-    if (label) label.textContent = 'Synced';
-  };
-
-  script.src = SYNC_URL + '?action=getData&callback=' + cb;
-  script.onerror = () => { delete window[cb]; if (label) label.textContent = 'Offline'; };
-  document.head.appendChild(script);
+    if (elSyncLabel) elSyncLabel.textContent = 'Synced';
+  });
 }
 
 function loadIssues() {
-  if (!SYNC_URL) return;
-  const cb = 'iss_' + Date.now();
-  const script = document.createElement('script');
-  window[cb] = function(data) {
-    delete window[cb];
-    if (script.parentNode) script.parentNode.removeChild(script);
-    if (!data.ok || !data.rows) return;
-    applyIssues(data.rows);
-  };
-  script.src = SYNC_URL + '?action=getIssues&callback=' + cb;
-  script.onerror = () => { delete window[cb]; };
-  document.head.appendChild(script);
+  jsonpLoad('getIssues', data => { if (data.ok && data.rows) applyIssues(data.rows); });
 }
 
 function applyIssues(rows) {
@@ -1781,18 +1764,7 @@ function applyIssues(rows) {
 }
 
 function loadTodos() {
-  if (!SYNC_URL) return;
-  const cb = 'td_' + Date.now();
-  const script = document.createElement('script');
-  window[cb] = function(data) {
-    delete window[cb];
-    if (script.parentNode) script.parentNode.removeChild(script);
-    if (!data.ok || !data.rows) return;
-    applyTodos(data.rows);
-  };
-  script.src = SYNC_URL + '?action=getTodos&callback=' + cb;
-  script.onerror = () => { delete window[cb]; };
-  document.head.appendChild(script);
+  jsonpLoad('getTodos', data => { if (data.ok && data.rows) applyTodos(data.rows); });
 }
 
 function applyTodos(rows) {
@@ -1813,7 +1785,6 @@ function applyTodos(rows) {
       owner: String(r[2] || '').trim(),
       due:   String(r[3] || '').trim(),
       status,
-      done: status === 'completed',
     };
   });
   renderTodos();
