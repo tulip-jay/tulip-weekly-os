@@ -487,75 +487,78 @@
     .done-sub   { font-size: 16px; color: rgba(255,255,255,.55); }
     .done-close { margin-top: 20px; }
 
-    /* ── CAPTURE BUTTON ─────────────────────────────────────────── */
-    .btn-capture {
-      display: flex; align-items: center; gap: 7px;
-      padding: 7px 16px; border-radius: var(--radius-sm);
-      background: var(--tulip-pale); color: var(--tulip-dark);
-      border: 1.5px solid #cde050; cursor: pointer;
-      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
-      letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
-      transition: all .12s; flex-shrink: 0;
+    /* ── CAPTURE FLOATING BUTTON ────────────────────────────────── */
+    #capture-fab {
+      position: fixed; bottom: 28px; right: 28px; z-index: 190;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--midnight); color: #fff;
+      border: none; cursor: pointer; font-size: 22px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      transition: background .12s, transform .12s;
     }
-    .btn-capture:hover { background: #e8f0c0; border-color: var(--tulip); }
-    .btn-capture .cap-icon { font-size: 15px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+    #capture-fab:hover { background: #2a2a2a; transform: scale(1.07); }
 
-    /* ── CAPTURE MODAL ──────────────────────────────────────────── */
+    /* ── CAPTURE POPUP ──────────────────────────────────────────── */
     #capture-modal {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: rgba(17,17,17,.55); backdrop-filter: blur(3px);
-      align-items: flex-start; justify-content: center; padding-top: 80px;
+      display: none; position: fixed; bottom: 84px; right: 28px; z-index: 200;
     }
-    #capture-modal.open { display: flex; }
+    #capture-modal.open { display: block; }
     .capture-dialog {
       background: var(--surface); border-radius: var(--radius);
-      border: 1px solid var(--border); width: 480px; max-width: calc(100vw - 40px);
-      box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+      border: 1px solid var(--border); width: 340px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+      transform-origin: bottom right;
+      animation: popIn .14s ease;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.93) translateY(8px); }
+      to   { opacity: 1; transform: scale(1)  translateY(0); }
     }
     .capture-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px 0; border-bottom: 1px solid var(--border-light);
+      padding: 12px 16px 0; border-bottom: 1px solid var(--border-light);
     }
     .capture-tabs { display: flex; gap: 0; }
     .capture-tab {
-      padding: 8px 18px 12px; font-size: 13px; font-weight: 600;
+      padding: 6px 14px 10px; font-size: 12.5px; font-weight: 600;
       color: var(--text-faint); background: none; border: none; cursor: pointer;
       border-bottom: 2px solid transparent; transition: all .12s; margin-bottom: -1px;
     }
     .capture-tab.active { color: var(--tulip-dark); border-bottom-color: var(--tulip); }
     .capture-tab:hover:not(.active) { color: var(--text-muted); }
     .capture-close {
-      width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+      width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border);
       background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--text-faint); font-size: 16px; line-height: 1; transition: all .12s;
-      margin-bottom: 10px;
+      color: var(--text-faint); font-size: 14px; line-height: 1; transition: all .12s;
+      margin-bottom: 8px; flex-shrink: 0;
     }
     .capture-close:hover { background: var(--bg); color: var(--text); }
-    .capture-body { padding: 18px 20px 20px; }
+    .capture-body { padding: 14px 16px 16px; }
     .capture-pane { display: none; }
     .capture-pane.active { display: block; }
     .capture-pane input,
     .capture-pane select,
     .capture-pane textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+      width: 100%; padding: 8px 11px; border: 1px solid var(--border);
       border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
       font-size: 13px; color: var(--text); background: var(--bg);
       margin-bottom: 8px; outline: none; transition: border-color .15s;
     }
-    .capture-pane textarea { resize: vertical; min-height: 60px; }
+    .capture-pane textarea { resize: vertical; min-height: 56px; }
     .capture-pane input:focus,
     .capture-pane textarea:focus,
     .capture-pane select:focus { border-color: var(--tulip); background: var(--surface); }
     .capture-pane select {
       appearance: none; -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239C9690' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
-      background-color: var(--bg); padding-right: 32px; cursor: pointer;
+      background-repeat: no-repeat; background-position: right 11px center;
+      background-color: var(--bg); padding-right: 30px; cursor: pointer;
     }
     .capture-pane select:required:invalid { color: var(--text-faint); }
     .capture-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .capture-row input, .capture-row select { margin-bottom: 0; flex: 1; min-width: 0; }
-    .capture-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .capture-actions { display: flex; gap: 8px; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -614,9 +617,6 @@
       <div class="curr-name"    id="curr-name">—</div>
       <div class="curr-desc"    id="curr-desc">—</div>
     </div>
-    <button class="btn-capture" onclick="openCapture('issue')" title="Capture an issue or to-do without leaving this section">
-      <span class="cap-icon">＋</span> Capture
-    </button>
     <div class="timer-block">
       <div class="timer-display" id="timer-display">0:00</div>
       <div class="timer-prog-track">
@@ -937,8 +937,11 @@
   <button class="btn btn-next done-close" onclick="document.getElementById('done-overlay').classList.remove('show')">Close</button>
 </div>
 
-<!-- ── CAPTURE MODAL ──────────────────────────────────────────────── -->
-<div id="capture-modal" onclick="if(event.target===this) closeCapture()">
+<!-- ── CAPTURE FAB ─────────────────────────────────────────────────── -->
+<button id="capture-fab" onclick="openCapture()" title="Capture issue or to-do">＋</button>
+
+<!-- ── CAPTURE POPUP ──────────────────────────────────────────────── -->
+<div id="capture-modal">
   <div class="capture-dialog">
     <div class="capture-header">
       <div class="capture-tabs">
@@ -1309,10 +1312,18 @@ function saveIssueNotes(id, value) {
 
 function priorityClass(p) { return 'priority-' + p; }
 
+function sortIssues() {
+  issues.sort((a, b) => {
+    if (a.completed === b.completed) return 0;
+    return a.completed ? 1 : -1;
+  });
+}
+
 function toggleIssueComplete(id) {
   const issue = issues.find(x => x.id === id);
+  if (!issue) return;
   issue.completed = !issue.completed;
-  issues.sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+  sortIssues();
   renderIssues();
   syncSheet({ action: 'markIssueComplete', issueTitle: issue.title, completed: String(issue.completed) });
   flashSync();
@@ -1431,6 +1442,11 @@ function cycleTodoStatus(id) {
 function saveTodoField(id, field, value) {
   const t = todos.find(x => x.id === id);
   if (!t) return;
+  if (field === 'text' && !value.trim()) {
+    todos = todos.filter(x => x.id !== id);
+    renderTodos();
+    return;
+  }
   t[field] = value;
   if (field === 'owner' || field === 'due') {
     syncSheet({ action: 'updateTodoField', todoText: t.text, field, value });
@@ -1438,10 +1454,13 @@ function saveTodoField(id, field, value) {
   }
 }
 
-/* ── Capture modal ── */
+/* ── Capture popup ── */
 function openCapture(tab) {
+  const modal = document.getElementById('capture-modal');
+  const isOpen = modal.classList.contains('open');
+  if (isOpen && !tab) { closeCapture(); return; }
   switchCaptureTab(tab || 'issue');
-  document.getElementById('capture-modal').classList.add('open');
+  modal.classList.add('open');
   const focusId = tab === 'todo' ? 'cap-todo-text' : 'cap-issue-title';
   setTimeout(() => document.getElementById(focusId).focus(), 50);
 }
@@ -1449,6 +1468,14 @@ function openCapture(tab) {
 function closeCapture() {
   document.getElementById('capture-modal').classList.remove('open');
 }
+
+document.addEventListener('click', e => {
+  const modal = document.getElementById('capture-modal');
+  const fab   = document.getElementById('capture-fab');
+  if (modal.classList.contains('open') && !modal.contains(e.target) && e.target !== fab) {
+    closeCapture();
+  }
+});
 
 function switchCaptureTab(tab) {
   ['issue', 'todo'].forEach(t => {
@@ -1786,6 +1813,7 @@ function applyIssues(rows) {
       completed,
     };
   });
+  sortIssues();
   renderIssues();
 }
 
