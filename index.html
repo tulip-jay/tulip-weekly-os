@@ -423,7 +423,6 @@
     .todos-table tr:last-child td { border-bottom: none; }
     .todos-table tr { transition: background .1s; }
     .todos-table tr:hover td { background: var(--bg); }
-    .todos-table { background: var(--surface); }
     .todos-table tr.status-completed td { opacity: .5; }
     .todos-table tr.status-completed .todo-action-text .todo-action-input { text-decoration: line-through; }
     .todo-check-cell { text-align: center; }
@@ -875,6 +874,17 @@ if (sessionStorage.getItem('tulip-unlocked') === '1') {
   document.getElementById('lock-screen').classList.add('hidden');
 }
 
+function checkPassword() {
+  const val = document.getElementById('lock-input').value;
+  if (val === LOCK_PASSWORD) {
+    document.getElementById('lock-screen').classList.add('hidden');
+    sessionStorage.setItem('tulip-unlocked', '1');
+  } else {
+    document.getElementById('lock-error').textContent = 'Incorrect password';
+    document.getElementById('lock-input').value = '';
+  }
+}
+
 /* ══ DATA ════════════════════════════════════════════════════════ */
 const SECTIONS = [
   { name:'📊 Scorecard', shortName:'Scorecard', desc:'Call your KPIs — on track or off track. No debate.',               lead:'Everyone',  mins:10 },
@@ -1286,8 +1296,10 @@ function saveTodoField(id, field, value) {
   const t = todos.find(x => x.id === id);
   if (!t) return;
   t[field] = value;
-  syncSheet({ action: 'updateTodoField', todoText: t.text, field, value });
-  flashSync();
+  if (field === 'owner' || field === 'due') {
+    syncSheet({ action: 'updateTodoField', todoText: t.text, field, value });
+    flashSync();
+  }
 }
 
 /* ── Add todo ── */
@@ -1398,17 +1410,6 @@ function hideEmptyWeekCols() {
     }
   });
 }
-/* ══ LOCK ════════════════════════════════════════════════════════ */
-function checkPassword() {
-  const val = document.getElementById('lock-input').value;
-  if (val === LOCK_PASSWORD) {
-    document.getElementById('lock-screen').classList.add('hidden');
-    sessionStorage.setItem('tulip-unlocked', '1');
-  } else {
-    document.getElementById('lock-error').textContent = 'Incorrect password';
-    document.getElementById('lock-input').value = '';
-  }
-}
 
 /* ══ SYNC ════════════════════════════════════════════════════════ */
 function syncSheet(params) {
@@ -1429,13 +1430,7 @@ function flashSync() {
   }, 1200);
 }
 
-function fmtWeek(d) {
-  const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return m[d.getMonth()] + ' ' + d.getDate();
-}
-
-function renderScorecard(rows) {
-  // rows = 2D array from Sheets — just rebuild sparklines & column logic from live DOM
+function renderScorecard() {
   buildSparklines();
   hideEmptyWeekCols();
   normalizeLatestCells();
@@ -1480,8 +1475,6 @@ function applyConfig(rows) {
 function loadFromSheets() {
   if (!SYNC_URL) return;
   const label = document.getElementById('sync-label');
-  if (label) label.textContent = 'Loading…';
-
   const cb = 'sc_' + Date.now();
   const script = document.createElement('script');
 
@@ -1514,9 +1507,9 @@ function loadIssues() {
 }
 
 function applyIssues(rows) {
-  const SKIP = ['issue', 'title', 'owner', 'priority', 'status', 'notes', '#'];
+  const SKIP = ['issue', 'title', 'owner', 'priority', 'status', 'notes'];
   const data = rows.filter(r => {
-    const cell = String(r[1] || '').trim().toLowerCase();
+    const cell = String(r[1] || '').replace(/[^a-z]/gi, '').toLowerCase();
     return cell && !SKIP.includes(cell);
   });
   if (!data.length) return;
@@ -1552,9 +1545,9 @@ function loadTodos() {
 }
 
 function applyTodos(rows) {
-  const SKIP = ['action', 'todo', 'task', 'owner', 'due', 'status', '#'];
+  const SKIP = ['action', 'todo', 'task', 'owner', 'due', 'status'];
   const data = rows.filter(r => {
-    const cell = String(r[1] || '').trim().toLowerCase();
+    const cell = String(r[1] || '').replace(/[^a-z]/gi, '').toLowerCase();
     return cell && !SKIP.includes(cell);
   });
   if (!data.length) return;
