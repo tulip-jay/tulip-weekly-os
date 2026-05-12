@@ -1183,7 +1183,10 @@ function toggleIssueExpand(id) {
 
 function saveIssueNotes(id, value) {
   const issue = issues.find(x => x.id === id);
-  if (issue) issue.notes = value;
+  if (!issue) return;
+  issue.notes = value;
+  syncSheet({ action: 'updateIssueNotes', issueTitle: issue.title, notes: value });
+  flashSync();
 }
 
 function priorityClass(p) { return 'priority-' + p; }
@@ -1531,7 +1534,7 @@ function applyIssues(rows) {
     const priStr    = String(r[3] || '').toLowerCase();
     const statusStr = String(r[4] || '').toLowerCase();
     const notesStr  = String(r[5] || '').trim();
-    const completed = statusStr.includes('closed') || statusStr.includes('✅');
+    const completed = statusStr.includes('done');
     return {
       id: i,
       title:    String(r[1] || '').trim(),
