@@ -486,6 +486,76 @@
     .done-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 600; letter-spacing: -.01em; }
     .done-sub   { font-size: 16px; color: rgba(255,255,255,.55); }
     .done-close { margin-top: 20px; }
+
+    /* ── CAPTURE BUTTON ─────────────────────────────────────────── */
+    .btn-capture {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 16px; border-radius: var(--radius-sm);
+      background: var(--tulip-pale); color: var(--tulip-dark);
+      border: 1.5px solid #cde050; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+      transition: all .12s; flex-shrink: 0;
+    }
+    .btn-capture:hover { background: #e8f0c0; border-color: var(--tulip); }
+    .btn-capture .cap-icon { font-size: 15px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+
+    /* ── CAPTURE MODAL ──────────────────────────────────────────── */
+    #capture-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(17,17,17,.55); backdrop-filter: blur(3px);
+      align-items: flex-start; justify-content: center; padding-top: 80px;
+    }
+    #capture-modal.open { display: flex; }
+    .capture-dialog {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border); width: 480px; max-width: calc(100vw - 40px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+    }
+    .capture-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px 0; border-bottom: 1px solid var(--border-light);
+    }
+    .capture-tabs { display: flex; gap: 0; }
+    .capture-tab {
+      padding: 8px 18px 12px; font-size: 13px; font-weight: 600;
+      color: var(--text-faint); background: none; border: none; cursor: pointer;
+      border-bottom: 2px solid transparent; transition: all .12s; margin-bottom: -1px;
+    }
+    .capture-tab.active { color: var(--tulip-dark); border-bottom-color: var(--tulip); }
+    .capture-tab:hover:not(.active) { color: var(--text-muted); }
+    .capture-close {
+      width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+      background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text-faint); font-size: 16px; line-height: 1; transition: all .12s;
+      margin-bottom: 10px;
+    }
+    .capture-close:hover { background: var(--bg); color: var(--text); }
+    .capture-body { padding: 18px 20px 20px; }
+    .capture-pane { display: none; }
+    .capture-pane.active { display: block; }
+    .capture-pane input,
+    .capture-pane select,
+    .capture-pane textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-size: 13px; color: var(--text); background: var(--bg);
+      margin-bottom: 8px; outline: none; transition: border-color .15s;
+    }
+    .capture-pane textarea { resize: vertical; min-height: 60px; }
+    .capture-pane input:focus,
+    .capture-pane textarea:focus,
+    .capture-pane select:focus { border-color: var(--tulip); background: var(--surface); }
+    .capture-pane select {
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239C9690' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      background-color: var(--bg); padding-right: 32px; cursor: pointer;
+    }
+    .capture-pane select:required:invalid { color: var(--text-faint); }
+    .capture-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .capture-row input, .capture-row select { margin-bottom: 0; flex: 1; min-width: 0; }
+    .capture-actions { display: flex; gap: 8px; margin-top: 12px; }
   </style>
 </head>
 <body>
@@ -544,6 +614,9 @@
       <div class="curr-name"    id="curr-name">—</div>
       <div class="curr-desc"    id="curr-desc">—</div>
     </div>
+    <button class="btn-capture" onclick="openCapture('issue')" title="Capture an issue or to-do without leaving this section">
+      <span class="cap-icon">＋</span> Capture
+    </button>
     <div class="timer-block">
       <div class="timer-display" id="timer-display">0:00</div>
       <div class="timer-prog-track">
@@ -862,6 +935,51 @@
   <div class="done-title">Meeting Complete</div>
   <div class="done-sub">Great work, Tulip team. Have a great week!</div>
   <button class="btn btn-next done-close" onclick="document.getElementById('done-overlay').classList.remove('show')">Close</button>
+</div>
+
+<!-- ── CAPTURE MODAL ──────────────────────────────────────────────── -->
+<div id="capture-modal" onclick="if(event.target===this) closeCapture()">
+  <div class="capture-dialog">
+    <div class="capture-header">
+      <div class="capture-tabs">
+        <button class="capture-tab active" id="cap-tab-issue" onclick="switchCaptureTab('issue')">Issue</button>
+        <button class="capture-tab"        id="cap-tab-todo"  onclick="switchCaptureTab('todo')">To-Do</button>
+      </div>
+      <button class="capture-close" onclick="closeCapture()">✕</button>
+    </div>
+    <div class="capture-body">
+      <!-- Issue pane -->
+      <div class="capture-pane active" id="cap-pane-issue">
+        <input id="cap-issue-title" placeholder="Describe the issue…" />
+        <div class="capture-row">
+          <input id="cap-issue-owner" placeholder="Owner" list="team-list" />
+          <select id="cap-issue-priority" required>
+            <option value="" disabled selected>Priority</option>
+            <option value="high">🔴 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🔵 Low</option>
+          </select>
+        </div>
+        <textarea id="cap-issue-notes" placeholder="Notes (optional)"></textarea>
+        <div class="capture-actions">
+          <button class="btn btn-primary"   onclick="submitCaptureIssue()">Add Issue</button>
+          <button class="btn btn-secondary" onclick="closeCapture()">Cancel</button>
+        </div>
+      </div>
+      <!-- To-Do pane -->
+      <div class="capture-pane" id="cap-pane-todo">
+        <input id="cap-todo-text" placeholder="Action item…" />
+        <div class="capture-row">
+          <input id="cap-todo-owner" placeholder="Owner" list="team-list" />
+          <input id="cap-todo-due" type="date" />
+        </div>
+        <div class="capture-actions">
+          <button class="btn btn-primary"   onclick="submitCaptureTodo()">Add To-Do</button>
+          <button class="btn btn-secondary" onclick="closeCapture()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1320,6 +1438,61 @@ function saveTodoField(id, field, value) {
   }
 }
 
+/* ── Capture modal ── */
+function openCapture(tab) {
+  switchCaptureTab(tab || 'issue');
+  document.getElementById('capture-modal').classList.add('open');
+  const focusId = tab === 'todo' ? 'cap-todo-text' : 'cap-issue-title';
+  setTimeout(() => document.getElementById(focusId).focus(), 50);
+}
+
+function closeCapture() {
+  document.getElementById('capture-modal').classList.remove('open');
+}
+
+function switchCaptureTab(tab) {
+  ['issue', 'todo'].forEach(t => {
+    document.getElementById('cap-tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('cap-pane-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+function submitCaptureIssue() {
+  const title    = document.getElementById('cap-issue-title').value.trim();
+  const owner    = document.getElementById('cap-issue-owner').value.trim();
+  const priority = document.getElementById('cap-issue-priority').value || 'medium';
+  const notes    = document.getElementById('cap-issue-notes').value.trim();
+  if (!title) { document.getElementById('cap-issue-title').focus(); return; }
+
+  issues.push({ id: Date.now(), title, owner, priority, notes, completed: false });
+  renderIssues();
+  syncSheet({ action: 'addIssue', title, owner, priority, notes });
+  flashSync();
+
+  document.getElementById('cap-issue-title').value = '';
+  document.getElementById('cap-issue-owner').value = '';
+  document.getElementById('cap-issue-priority').value = '';
+  document.getElementById('cap-issue-notes').value = '';
+  closeCapture();
+}
+
+function submitCaptureTodo() {
+  const text  = document.getElementById('cap-todo-text').value.trim();
+  const owner = document.getElementById('cap-todo-owner').value.trim();
+  const due   = document.getElementById('cap-todo-due').value;
+  if (!text) { document.getElementById('cap-todo-text').focus(); return; }
+
+  todos.push({ id: Date.now(), text, owner, due, status: 'not-started', done: false });
+  renderTodos();
+  syncSheet({ action: 'addTodo', text, owner, due, status: 'not-started' });
+  flashSync();
+
+  document.getElementById('cap-todo-text').value = '';
+  document.getElementById('cap-todo-owner').value = '';
+  document.getElementById('cap-todo-due').value = '';
+  closeCapture();
+}
+
 /* ── Add todo ── */
 function toggleAddTodo() {
   const f = document.getElementById('add-todo-form');
@@ -1657,6 +1830,7 @@ function applyTodos(rows) {
 
 /* ══ KEYBOARD ════════════════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeCapture(); return; }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.code === 'Space')      { e.preventDefault(); toggleTimer(); }
   if (e.code === 'ArrowRight') nextSection();
