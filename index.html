@@ -1685,9 +1685,10 @@ function renderScorecard(rows) {
   markLatestWeekHead();
 }
 
+let _jsonpSeq = 0;
 function jsonpLoad(action, onData) {
   if (!SYNC_URL) return;
-  const cb = 'cb_' + Date.now();
+  const cb = 'cb_' + (++_jsonpSeq);
   const script = document.createElement('script');
   window[cb] = function(data) {
     delete window[cb];
