@@ -1263,7 +1263,7 @@ function renderTodos() {
   const c = document.getElementById('todos-container');
   c.innerHTML = todos.map(t => `
     <tr class="status-${t.status}">
-      <td class="todo-check-cell" onclick="cycleTodoStatus(${t.id})">
+      <td class="todo-check-cell" onclick="toggleTodoDone(${t.id})">
         <div class="todo-circle">${t.status === 'completed' ? '✓' : ''}</div>
       </td>
       <td class="todo-action-text">
@@ -1287,13 +1287,22 @@ function renderTodos() {
     </tr>`).join('');
 }
 
+function toggleTodoDone(id) {
+  const t = todos.find(x => x.id === id);
+  t.status = t.status === 'completed' ? 'not-started' : 'completed';
+  t.done = t.status === 'completed';
+  renderTodos();
+  syncSheet({ action: 'markTodoDone', todoText: t.text, status: t.status });
+  flashSync();
+}
+
 function cycleTodoStatus(id) {
   const t = todos.find(x => x.id === id);
   const cycle = ['not-started', 'in-process', 'completed'];
   t.status = cycle[(cycle.indexOf(t.status) + 1) % cycle.length];
   t.done = t.status === 'completed';
   renderTodos();
-  syncSheet({ action: 'markTodoDone', todoText: t.text, done: String(t.done) });
+  syncSheet({ action: 'markTodoDone', todoText: t.text, status: t.status });
   flashSync();
 }
 
