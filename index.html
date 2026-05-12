@@ -1164,11 +1164,16 @@ function autoResizeTextarea(el) {
 function toggleIssueExpand(id) {
   const card = document.getElementById('issue-' + id);
   if (card.classList.contains('expanded')) {
-    const ta = card.querySelector('.issue-notes-input');
-    const issue = issues.find(x => x.id === id);
-    issue.notes = ta.value;
+    issues.find(x => x.id === id).notes = card.querySelector('.issue-notes-input').value;
     card.classList.remove('expanded');
   } else {
+    // Close any other open notes panel first
+    document.querySelectorAll('.issue-card.expanded').forEach(c => {
+      const otherId = parseInt(c.id.replace('issue-', ''));
+      const otherIssue = issues.find(x => x.id === otherId);
+      if (otherIssue) otherIssue.notes = c.querySelector('.issue-notes-input').value;
+      c.classList.remove('expanded');
+    });
     card.classList.add('expanded');
     const ta = card.querySelector('.issue-notes-input');
     autoResizeTextarea(ta);
@@ -1514,15 +1519,16 @@ function applyIssues(rows) {
   });
   if (!data.length) return;
   issues = data.map((r, i) => {
-    const priStr   = String(r[3] || '').toLowerCase();
-    const notesStr = String(r[4] || '').trim();
-    const completed = notesStr.includes('✅');
+    const priStr    = String(r[3] || '').toLowerCase();
+    const notesStr  = String(r[4] || '').trim();
+    const statusStr = String(r[5] || '').toLowerCase();
+    const completed = statusStr.includes('closed') || statusStr.includes('✅');
     return {
       id: i,
-      title:     String(r[1] || '').trim(),
-      owner:     String(r[2] || '').trim(),
-      priority:  priStr.includes('high') ? 'high' : priStr.includes('low') ? 'low' : 'medium',
-      notes:     completed ? '' : notesStr,
+      title:    String(r[1] || '').trim(),
+      owner:    String(r[2] || '').trim(),
+      priority: priStr.includes('high') ? 'high' : priStr.includes('low') ? 'low' : 'medium',
+      notes:    notesStr,
       completed,
     };
   });
