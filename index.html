@@ -1529,8 +1529,8 @@ function applyIssues(rows) {
   if (!data.length) return;
   issues = data.map((r, i) => {
     const priStr    = String(r[3] || '').toLowerCase();
-    const notesStr  = String(r[4] || '').trim();
-    const statusStr = String(r[5] || '').toLowerCase();
+    const statusStr = String(r[4] || '').toLowerCase();
+    const notesStr  = String(r[5] || '').trim();
     const completed = statusStr.includes('closed') || statusStr.includes('✅');
     return {
       id: i,
