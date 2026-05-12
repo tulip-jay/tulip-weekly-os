@@ -124,6 +124,9 @@
     .meta-row { display: flex; gap: 14px; margin-top: 10px; }
     .meta-item { font-size: 11px; color: rgba(255,255,255,.38); }
     .meta-item strong { color: rgba(255,255,255,.6); font-weight: 600; }
+    .sync-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 10px; color: rgba(255,255,255,.35); }
+    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.2); flex-shrink: 0; transition: background .4s; }
+    .sync-dot.flash { background: var(--tulip); }
 
     /* ── MAIN ────────────────────────────────────────────────────── */
     .main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
@@ -494,6 +497,10 @@
       <div class="meta-item"><strong>Rec:</strong> Charlotte</div>
       <div class="meta-item"><strong>60 min</strong></div>
     </div>
+    <div class="sync-status">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label">Not connected</span>
+    </div>
   </div>
 </aside>
 
@@ -827,6 +834,9 @@
 </div>
 
 <script>
+/* ══ CONFIG ══════════════════════════════════════════════════════ */
+const SYNC_URL = 'https://script.google.com/macros/s/AKfycbxPnAZien-_h41lpDHJ89QkSZSSrVkOC-vdufzmJcHaesSYxFQoIZAuQT-5YkunuW5kOQ/exec';
+
 /* ══ DATA ════════════════════════════════════════════════════════ */
 const SECTIONS = [
   { name:'📊 Scorecard', shortName:'Scorecard', desc:'Call your KPIs — on track or off track. No debate.',               lead:'Everyone',  mins:10 },
@@ -958,6 +968,10 @@ function init() {
   normalizeLatestCells();
   markLatestWeekHead();
   goToSection(0);
+  if (SYNC_URL) {
+    document.getElementById('sync-label').textContent = 'Connecting…';
+    loadFromSheets();
+  }
 }
 
 function buildNav() {
@@ -1024,6 +1038,8 @@ function toggleRockStatus(id) {
   const r = rocks.find(x => x.id === id);
   r.status = r.status === 'on-track' ? 'off-track' : 'on-track';
   renderRocks();
+  syncSheet({ action: 'updateRockStatus', rockTitle: r.title, status: r.status });
+  flashSync();
 }
 
 /* ══ GOALS ═══════════════════════════════════════════════════════ */
@@ -1049,6 +1065,8 @@ function toggleGoalStatus(person) {
   const g = goals.find(x => x.person === person);
   g.status = g.status === 'on-track' ? 'off-track' : 'on-track';
   renderGoals();
+  syncSheet({ action: 'updateGoalStatus', person: g.person, status: g.status });
+  flashSync();
 }
 
 /* ══ ISSUES ══════════════════════════════════════════════════════ */
@@ -1117,6 +1135,8 @@ function toggleIssueComplete(id) {
   const issue = issues.find(x => x.id === id);
   issue.completed = !issue.completed;
   renderIssues();
+  syncSheet({ action: 'markIssueComplete', issueTitle: issue.title, completed: String(issue.completed) });
+  flashSync();
 }
 
 /* ── Drag & Drop ── */
@@ -1167,6 +1187,8 @@ function submitIssue() {
 
   issues.push({ id: Date.now(), title, owner: owner || '', priority, notes, completed: false });
   renderIssues();
+  syncSheet({ action: 'addIssue', title, owner, priority, notes });
+  flashSync();
 
   ['new-issue-title','new-issue-owner','new-issue-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('new-issue-priority').value = '';
@@ -1214,12 +1236,16 @@ function cycleTodoStatus(id) {
   t.status = cycle[(cycle.indexOf(t.status) + 1) % cycle.length];
   t.done = t.status === 'completed';
   renderTodos();
+  syncSheet({ action: 'markTodoDone', todoText: t.text, done: String(t.done) });
+  flashSync();
 }
 
 function saveTodoField(id, field, value) {
   const t = todos.find(x => x.id === id);
   if (!t) return;
   t[field] = value;
+  syncSheet({ action: 'updateTodoField', todoText: t.text, field, value });
+  flashSync();
 }
 
 /* ── Add todo ── */
@@ -1238,6 +1264,8 @@ function submitTodo() {
 
   todos.push({ id: Date.now(), text, owner: owner || '', due: due || '', status, done: status === 'completed' });
   renderTodos();
+  syncSheet({ action: 'addTodo', text, owner, due, status });
+  flashSync();
 
   ['new-todo-text','new-todo-owner','new-todo-due'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('new-todo-status').value = '';
@@ -1328,6 +1356,59 @@ function hideEmptyWeekCols() {
     }
   });
 }
+/* ══ SYNC ════════════════════════════════════════════════════════ */
+function syncSheet(params) {
+  if (!SYNC_URL) return;
+  const url = SYNC_URL + '?' + new URLSearchParams(params).toString();
+  fetch(url, { mode: 'no-cors' }).catch(() => {});
+}
+
+function flashSync() {
+  const dot   = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  if (!dot) return;
+  dot.classList.add('flash');
+  if (label) label.textContent = 'Saved';
+  setTimeout(() => {
+    dot.classList.remove('flash');
+    if (label) label.textContent = 'Synced';
+  }, 1200);
+}
+
+function fmtWeek(d) {
+  const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return m[d.getMonth()] + ' ' + d.getDate();
+}
+
+function renderScorecard(rows) {
+  // rows = 2D array from Sheets — just rebuild sparklines & column logic from live DOM
+  buildSparklines();
+  hideEmptyWeekCols();
+  normalizeLatestCells();
+  markLatestWeekHead();
+}
+
+function loadFromSheets() {
+  if (!SYNC_URL) return;
+  const label = document.getElementById('sync-label');
+  if (label) label.textContent = 'Loading…';
+
+  const cb = 'sc_' + Date.now();
+  const script = document.createElement('script');
+
+  window[cb] = function(data) {
+    delete window[cb];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    if (!data.ok) { if (label) label.textContent = 'Offline'; return; }
+    renderScorecard(data.rows);
+    if (label) label.textContent = 'Synced';
+  };
+
+  script.src = SYNC_URL + '?action=getData&callback=' + cb;
+  script.onerror = () => { delete window[cb]; if (label) label.textContent = 'Offline'; };
+  document.head.appendChild(script);
+}
+
 /* ══ KEYBOARD ════════════════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
