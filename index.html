@@ -1463,14 +1463,16 @@ function renderScorecard(rows) {
   const hNorm = s => String(s || '').replace(/[^a-z]/gi, '').toLowerCase();
 
   // ── 2. Identify metadata columns ────────────────────────────────
-  let kpiCol = 1, ownerCol = -1, targetCol = -1, statusCol = -1;
+  let kpiCol = 0, ownerCol = -1, targetCol = -1, statusCol = -1;
   for (let ci = 0; ci < firstDateColIdx; ci++) {
     const h = hNorm(headerRow[ci]);
     if (!h) continue;
-    if      (h.includes('owner') || h.includes('lead'))           ownerCol  = ci;
-    else if (h.includes('target') || h.includes('goal'))          targetCol = ci;
-    else if (h.includes('kpi') || h.includes('metric') || h.includes('name')) kpiCol = ci;
+    if      (h.includes('owner') || h.includes('lead') || h.includes('person')) ownerCol  = ci;
+    else if (h.includes('target') || h.includes('goal'))                         targetCol = ci;
+    else if (h.includes('kpi') || h.includes('metric') || h.includes('name'))   kpiCol    = ci;
   }
+  // Positional fallback: if still no owner found, assume the column right after kpiCol
+  if (ownerCol < 0 && kpiCol + 1 < firstDateColIdx) ownerCol = kpiCol + 1;
   for (let ci = lastDateColIdx + 1; ci < headerRow.length; ci++) {
     const h = hNorm(String(headerRow[ci] || ''));
     if (h.includes('status') || h.includes('track')) { statusCol = ci; break; }
@@ -1632,21 +1634,22 @@ function loadIssues() {
 }
 
 function applyIssues(rows) {
+  // Col A=title, B=owner, C=priority, D=status, E=notes
   const SKIP = ['issue', 'title', 'owner', 'priority', 'status', 'notes'];
   const data = rows.filter(r => {
-    const cell = String(r[1] || '').replace(/[^a-z]/gi, '').toLowerCase();
+    const cell = String(r[0] || '').replace(/[^a-z]/gi, '').toLowerCase();
     return cell && !SKIP.includes(cell);
   });
   if (!data.length) return;
   issues = data.map((r, i) => {
-    const priStr    = String(r[3] || '').toLowerCase();
-    const statusStr = String(r[4] || '').toLowerCase();
-    const notesStr  = String(r[5] || '').trim();
+    const priStr    = String(r[2] || '').toLowerCase();
+    const statusStr = String(r[3] || '').toLowerCase();
+    const notesStr  = String(r[4] || '').trim();
     const completed = statusStr.includes('done');
     return {
       id: i,
-      title:    String(r[1] || '').trim(),
-      owner:    String(r[2] || '').trim(),
+      title:    String(r[0] || '').trim(),
+      owner:    String(r[1] || '').trim(),
       priority: priStr.includes('high') ? 'high' : priStr.includes('low') ? 'low' : 'medium',
       notes:    notesStr,
       completed,
@@ -1685,14 +1688,13 @@ function loadGoals() {
 function applyGoals(rows) {
   const SKIP = new Set(['', 'goal', 'goals', 'person', 'name', '#', 'owner', 'status']);
   rows.forEach(row => {
-    const nameB    = String(row[1] || '').trim().toLowerCase(); // col B
-    const nameC    = String(row[2] || '').trim().toLowerCase(); // col C
-    const statusRaw = String(row[3] || '').toLowerCase(); // col D
-    const firstB = nameB.replace(/[^a-z0-9 ]/gi, '').split(/\s+/)[0];
-    if (SKIP.has(firstB) && SKIP.has(nameC.split(/\s+/)[0])) return;
+    const nameA    = String(row[0] || '').trim().toLowerCase(); // col A = Person
+    const statusRaw = String(row[3] || '').toLowerCase(); // col D = Status (if present)
+    const firstA = nameA.replace(/[^a-z0-9 ]/gi, '').split(/\s+/)[0];
+    if (!nameA || SKIP.has(firstA)) return;
     const goal = goals.find(g => {
       const p = g.person.toLowerCase();
-      return p === nameB || p === nameC || nameB.startsWith(p) || nameC.startsWith(p);
+      return p === nameA || nameA.startsWith(p) || p.startsWith(nameA);
     });
     if (!goal) return;
     if (statusRaw.includes('off') || statusRaw.includes('🔴')) goal.status = 'off-track';
@@ -1706,22 +1708,23 @@ function loadTodos() {
 }
 
 function applyTodos(rows) {
+  // Col A=action, B=owner, C=due, D=status
   const SKIP = ['action', 'todo', 'task', 'owner', 'due', 'status'];
   const data = rows.filter(r => {
-    const cell = String(r[1] || '').replace(/[^a-z]/gi, '').toLowerCase();
+    const cell = String(r[0] || '').replace(/[^a-z]/gi, '').toLowerCase();
     return cell && !SKIP.includes(cell);
   });
   if (!data.length) return;
   todos = data.map((r, i) => {
-    const statStr = String(r[4] || '').toLowerCase();
+    const statStr = String(r[3] || '').toLowerCase();
     const status  = statStr.includes('done') || statStr.includes('✅') ? 'completed'
                   : statStr.includes('process') ? 'in-process'
                   : 'not-started';
     return {
       id: i,
-      text:  String(r[1] || '').trim(),
-      owner: String(r[2] || '').trim(),
-      due:   String(r[3] || '').trim(),
+      text:  String(r[0] || '').trim(),
+      owner: String(r[1] || '').trim(),
+      due:   String(r[2] || '').trim(),
       status,
     };
   });
