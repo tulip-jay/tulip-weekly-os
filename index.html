@@ -845,7 +845,7 @@ const SECTIONS = [
   { name:'🔥 Issues',    shortName:'Issues',    desc:'Top 3 only. Identify → Discuss → Solve.',                          lead:'Everyone',  mins:25 },
   { name:'✅ To-Dos',    shortName:'To-Dos',    desc:'Every commitment = owner + due date. Charlotte captures live.',     lead:'Charlotte', mins: 5 },
 ];
-const TOTAL_MINS = 60;
+let TOTAL_MINS = 60;
 
 let rocks = [
   { id:0, title:'Reduce shipping / fulfillment cost structure', owner:'Jay + Charlotte', status:'off-track', lever:'↓ Cost',        done:'Cost/order below Q1 2025 baseline. Root cause complete. Fix actioned by June 30.', sheetRow:8 },
@@ -970,7 +970,9 @@ function init() {
   goToSection(0);
   if (SYNC_URL) {
     document.getElementById('sync-label').textContent = 'Connecting…';
+    loadConfig();
     loadFromSheets();
+    setInterval(() => { loadConfig(); loadFromSheets(); }, 60000);
   }
 }
 
@@ -1386,6 +1388,41 @@ function renderScorecard(rows) {
   hideEmptyWeekCols();
   normalizeLatestCells();
   markLatestWeekHead();
+}
+
+function loadConfig() {
+  if (!SYNC_URL) return;
+  const cb = 'cfg_' + Date.now();
+  const script = document.createElement('script');
+  window[cb] = function(data) {
+    delete window[cb];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    if (!data.ok || !data.rows) return;
+    applyConfig(data.rows);
+  };
+  script.src = SYNC_URL + '?action=getConfig&callback=' + cb;
+  script.onerror = () => { delete window[cb]; };
+  document.head.appendChild(script);
+}
+
+function applyConfig(rows) {
+  rows.forEach(row => {
+    const name = String(row[0]).trim();
+    const mins = parseFloat(row[1]);
+    if (!name || isNaN(mins)) return; // skip header or blank rows
+    const idx = SECTIONS.findIndex(s =>
+      s.shortName.toLowerCase() === name.toLowerCase() ||
+      s.name.toLowerCase().includes(name.toLowerCase())
+    );
+    if (idx >= 0) {
+      SECTIONS[idx].mins = mins;
+      sectionTimers[idx] = mins * 60;
+    }
+  });
+  TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
+  timerSecs = sectionTimers[currentIdx];
+  renderTimer();
+  buildNav();
 }
 
 function loadFromSheets() {
