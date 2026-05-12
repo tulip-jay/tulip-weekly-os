@@ -380,40 +380,6 @@
     }
     .issue-notes-input:focus { border-color: var(--tulip); }
 
-    /* ── ADD FORM ────────────────────────────────────────────────── */
-    .add-btn {
-      display: flex; align-items: center; gap: 9px;
-      width: 100%; padding: 13px 16px; margin-top: 8px;
-      background: var(--surface); border: 1.5px dashed var(--border);
-      border-radius: var(--radius-sm); cursor: pointer; color: var(--text-faint);
-      font-size: 13px; font-family: 'Inter', sans-serif;
-      transition: all .15s;
-    }
-    .add-btn:hover { border-color: var(--tulip); color: var(--tulip-dark); background: var(--tulip-pale); }
-
-    .add-form {
-      display: none; background: var(--surface);
-      border: 1.5px solid var(--tulip); border-radius: var(--radius);
-      padding: 16px; margin-top: 8px;
-    }
-    .add-form.open { display: block; }
-    .add-form input, .add-form select, .add-form textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid var(--border);
-      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
-      font-size: 13px; color: var(--text); background: var(--bg);
-      margin-bottom: 8px; outline: none; transition: border-color .15s;
-    }
-    .add-form textarea { resize: vertical; min-height: 64px; }
-    .add-form input:focus, .add-form textarea:focus, .add-form select:focus { border-color: var(--tulip); }
-    .add-form select {
-      appearance: none; -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239C9690' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
-      padding-right: 32px; cursor: pointer;
-    }
-    .add-form select:required:invalid { color: var(--text-faint); }
-    .add-form-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .add-form-row input, .add-form-row select { margin-bottom: 0; flex: 1; }
     .form-actions { display: flex; gap: 8px; margin-top: 10px; }
 
     /* ── TODOS ───────────────────────────────────────────────────── */
@@ -874,35 +840,17 @@
         <span class="issue-key-item"><span class="issue-key-dot" style="background:#3B82F6"></span>Low</span>
       </div>
       <div class="issues-list" id="issues-container"></div>
-      <button class="add-btn" onclick="toggleAddIssue()">＋ Add issue</button>
-      <div class="add-form" id="add-issue-form">
-        <input id="new-issue-title" placeholder="Issue…" />
-        <datalist id="team-list">
-          <option value="Lori">
-          <option value="Jay">
-          <option value="Mike">
-          <option value="Bitty">
-          <option value="Vendela">
-          <option value="Charlotte">
-          <option value="Khreen">
-          <option value="All">
-        </datalist>
-        <div class="add-form-row">
-          <input id="new-issue-owner" placeholder="Owner" list="team-list" />
-          <select id="new-issue-priority" required>
-            <option value="" disabled selected>Priority</option>
-            <option value="high">🔴 High</option>
-            <option value="medium">🟡 Medium</option>
-            <option value="low">🔵 Low</option>
-          </select>
-        </div>
-        <input id="new-issue-notes" placeholder="Notes (optional)" />
-        <div class="form-actions">
-          <button class="btn btn-primary"   onclick="submitIssue()">Add Issue</button>
-          <button class="btn btn-secondary" onclick="toggleAddIssue()">Cancel</button>
-        </div>
-      </div>
     </div>
+    <datalist id="team-list">
+      <option value="Lori">
+      <option value="Jay">
+      <option value="Mike">
+      <option value="Bitty">
+      <option value="Vendela">
+      <option value="Charlotte">
+      <option value="Khreen">
+      <option value="All">
+    </datalist>
 
     <!-- ── 5. TO-DOS ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-4">
@@ -919,24 +867,6 @@
           </thead>
           <tbody id="todos-container"></tbody>
         </table>
-      </div>
-      <button class="add-btn" onclick="toggleAddTodo()">＋ Add to-do</button>
-      <div class="add-form" id="add-todo-form">
-        <input id="new-todo-text" placeholder="Action item…" />
-        <div class="add-form-row">
-          <input id="new-todo-owner" placeholder="Owner" list="team-list" style="flex:1;min-width:0" />
-          <input id="new-todo-due" type="date" style="flex:1;min-width:0" />
-          <select id="new-todo-status" required style="flex:1;min-width:0">
-            <option value="" disabled selected>Status</option>
-            <option value="not-started">Not started</option>
-            <option value="in-process">In process</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-primary"   onclick="submitTodo()">Add To-Do</button>
-          <button class="btn btn-secondary" onclick="toggleAddTodo()">Cancel</button>
-        </div>
       </div>
     </div>
 
@@ -1418,29 +1348,6 @@ function dragEnd(e) {
   dragSrcIdx = null;
 }
 
-/* ── Add issue ── */
-function toggleAddIssue() {
-  const f = document.getElementById('add-issue-form');
-  f.classList.toggle('open');
-  if (f.classList.contains('open')) document.getElementById('new-issue-title').focus();
-}
-
-function submitIssue() {
-  const title    = document.getElementById('new-issue-title').value.trim();
-  const owner    = document.getElementById('new-issue-owner').value.trim();
-  const priority = document.getElementById('new-issue-priority').value || 'medium';
-  const notes    = document.getElementById('new-issue-notes').value.trim();
-  if (!title) return;
-
-  issues.push({ id: Date.now(), title, owner: owner || '', priority, notes, completed: false });
-  renderIssues();
-  syncSheet({ action: 'addIssue', title, owner, priority, notes });
-  flashSync();
-
-  ['new-issue-title','new-issue-owner','new-issue-notes'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('new-issue-priority').value = '';
-  toggleAddIssue();
-}
 
 /* ══ TODOS ═══════════════════════════════════════════════════════ */
 function todoStatusLabel(s) {
@@ -1532,6 +1439,20 @@ document.addEventListener('click', e => {
   if (modal.classList.contains('open') && !modal.contains(e.target) && e.target !== fab) {
     closeCapture();
   }
+
+  // Collapse expanded issue note if click lands outside any issue card
+  if (!e.target.closest('.issue-card')) {
+    document.querySelectorAll('.issue-card.expanded').forEach(c => {
+      const id = parseInt(c.id.replace('issue-', ''));
+      const issue = issues.find(x => x.id === id);
+      const ta = c.querySelector('.issue-notes-input');
+      if (issue && ta) {
+        issue.notes = ta.value;
+        saveIssueNotes(id, ta.value);
+      }
+      c.classList.remove('expanded');
+    });
+  }
 });
 
 function switchCaptureTab(tab) {
@@ -1577,29 +1498,6 @@ function submitCaptureTodo() {
   closeCapture();
 }
 
-/* ── Add todo ── */
-function toggleAddTodo() {
-  const f = document.getElementById('add-todo-form');
-  f.classList.toggle('open');
-  if (f.classList.contains('open')) document.getElementById('new-todo-text').focus();
-}
-
-function submitTodo() {
-  const text   = document.getElementById('new-todo-text').value.trim();
-  const owner  = document.getElementById('new-todo-owner').value.trim();
-  const due    = document.getElementById('new-todo-due').value.trim();
-  const status = document.getElementById('new-todo-status').value || 'not-started';
-  if (!text) return;
-
-  todos.push({ id: Date.now(), text, owner: owner || '', due: due || '', status, done: status === 'completed' });
-  renderTodos();
-  syncSheet({ action: 'addTodo', text, owner, due, status });
-  flashSync();
-
-  ['new-todo-text','new-todo-owner','new-todo-due'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('new-todo-status').value = '';
-  toggleAddTodo();
-}
 
 
 /* ══ SCORECARD SPARKLINES ═══════════════════════════════════════════ */
