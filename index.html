@@ -308,6 +308,13 @@
     .issue-card.drag-over  { box-shadow: 0 0 0 2px var(--tulip); }
     .issue-card.completed  { opacity: .5; }
     .issue-card.completed .issue-title { text-decoration: line-through; }
+    .issues-section-label {
+      font-size: 9.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+      color: var(--text-faint); padding: 14px 2px 6px; display: flex; align-items: center; gap: 10px;
+    }
+    .issues-section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border-light);
+    }
 
     .issue-top { display: flex; align-items: stretch; }
     .issue-drag-num {
@@ -337,7 +344,13 @@
     .issue-key-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
     .issue-body { flex: 1; padding: 13px 16px; cursor: pointer; min-width: 0; }
-    .issue-title { font-size: 13.5px; font-weight: 700; line-height: 1.4; }
+    .issue-title-input {
+      width: 100%; border: none; outline: none; background: transparent;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 700;
+      color: var(--text); line-height: 1.4; padding: 0; cursor: text;
+    }
+    .issue-title-input:focus { border-bottom: 1.5px solid var(--tulip); }
+    .issue-card.completed .issue-title-input { text-decoration: line-through; }
     .issue-owner-line { font-size: 11px; color: var(--text-faint); margin-top: 3px; }
 
     .issue-actions {
@@ -822,7 +835,7 @@
               <td class="status-cell"><span class="badge badge-green"><span class="badge-dot"></span>On Track</span></td>
             </tr>
             <tr>
-              <td class="kpi-cell">CX Response Time ▼</td>
+              <td class="kpi-cell">CX First Response Time ▼</td>
               <td class="owner-cell">Khreen</td>
               <td class="target-cell">&lt; 24 hr</td>
               <td class="week-cell is-empty">—</td>
@@ -1127,6 +1140,20 @@ function nextSection() {
 
 /* ══ NAVIGATION ══════════════════════════════════════════════════ */
 function init() {
+  // Apply cached section times before first render to avoid flash
+  const cachedMins = localStorage.getItem('tulip-section-mins');
+  if (cachedMins) {
+    try {
+      JSON.parse(cachedMins).forEach((m, i) => {
+        if (SECTIONS[i] && !isNaN(m) && m > 0) {
+          SECTIONS[i].mins = m;
+          sectionTimers[i] = m * 60;
+        }
+      });
+      TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
+    } catch(e) {}
+  }
+
   buildNav();
   renderRocks();
   renderGoals();
@@ -1243,9 +1270,8 @@ function toggleGoalStatus(person) {
 }
 
 /* ══ ISSUES ══════════════════════════════════════════════════════ */
-function renderIssues() {
-  const c = document.getElementById('issues-container');
-  c.innerHTML = issues.map((issue, i) => `
+function issueCardHTML(issue, i) {
+  return `
     <div class="issue-card ${issue.completed ? 'completed' : ''}"
          id="issue-${issue.id}" draggable="true"
          ondragstart="dragStart(event,${i})" ondragover="dragOver(event)"
@@ -1258,7 +1284,10 @@ function renderIssues() {
         </div>
         <div class="issue-stripe ${priorityClass(issue.priority)}"></div>
         <div class="issue-body" onclick="toggleIssueExpand(${issue.id})">
-          <div class="issue-title">${issue.title}</div>
+          <input class="issue-title-input"
+                 value="${issue.title.replace(/"/g, '&quot;')}"
+                 onclick="event.stopPropagation()"
+                 onblur="saveIssueTitle(${issue.id}, this.value)" />
           ${issue.owner ? `<div class="issue-owner-line">${issue.owner}</div>` : ''}
         </div>
         <div class="issue-actions">
@@ -1274,7 +1303,19 @@ function renderIssues() {
           oninput="autoResizeTextarea(this)"
           onblur="saveIssueNotes(${issue.id}, this.value)">${issue.notes || ''}</textarea>
       </div>
-    </div>`).join('');
+    </div>`;
+}
+
+function renderIssues() {
+  const c = document.getElementById('issues-container');
+  const active    = issues.filter(x => !x.completed);
+  const completed = issues.filter(x =>  x.completed);
+  let html = active.map((issue, i) => issueCardHTML(issue, i)).join('');
+  if (completed.length) {
+    html += `<div class="issues-section-label">Completed (${completed.length})</div>`;
+    html += completed.map((issue, i) => issueCardHTML(issue, active.length + i)).join('');
+  }
+  c.innerHTML = html;
 }
 
 function autoResizeTextarea(el) {
@@ -1299,6 +1340,22 @@ function toggleIssueExpand(id) {
     const ta = card.querySelector('.issue-notes-input');
     autoResizeTextarea(ta);
     ta.focus();
+  }
+}
+
+function saveIssueTitle(id, value) {
+  const issue = issues.find(x => x.id === id);
+  if (!issue) return;
+  if (!value.trim()) {
+    issues = issues.filter(x => x.id !== id);
+    renderIssues();
+    return;
+  }
+  const oldTitle = issue.title;
+  issue.title = value.trim();
+  if (oldTitle !== issue.title) {
+    syncSheet({ action: 'updateIssueTitle', oldTitle, newTitle: issue.title });
+    flashSync();
   }
 }
 
@@ -1693,8 +1750,15 @@ function renderScorecard(rows) {
       rows.slice(dataStart).forEach(row => {
         const kpiName = norm(String(row[1] || row[0] || ''));
         if (!kpiName) return;
+        // 1) exact, 2) one contains the other, 3) significant word overlap (≥2 words shared)
+        const words = s => s.split(/(?=[A-Z])|(?<=[a-z])(?=[0-9])|(?<=[0-9])(?=[a-z])/).join(' ')
+          .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
         const htmlRow = kpiMap[kpiName]
-          || Object.entries(kpiMap).find(([k]) => k.startsWith(kpiName.slice(0, 8)) || kpiName.startsWith(k.slice(0, 8)))?.[1];
+          || Object.entries(kpiMap).find(([k]) => k.includes(kpiName) || kpiName.includes(k))?.[1]
+          || Object.entries(kpiMap).find(([k]) => {
+               const kw = words(k), nw = words(kpiName);
+               return kw.filter(w => nw.includes(w)).length >= Math.min(2, Math.min(kw.length, nw.length));
+             })?.[1];
         if (!htmlRow) return;
 
         const weekCells = [...htmlRow.querySelectorAll('.week-cell')];
@@ -1751,6 +1815,7 @@ function applyConfig(rows) {
     }
   });
   TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
+  localStorage.setItem('tulip-section-mins', JSON.stringify(SECTIONS.map(s => s.mins)));
   if (!timerRunning) {
     timerSecs = sectionTimers[currentIdx];
     renderTimer();
