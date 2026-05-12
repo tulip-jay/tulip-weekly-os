@@ -39,7 +39,7 @@
       background: var(--bg);
       color: var(--text);
       display: flex;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.5;
     }
 
@@ -58,18 +58,18 @@
       border-bottom: 1px solid rgba(255,255,255,0.07);
     }
     .brand-logo { height: 30px; width: auto; display: block; margin-bottom: 8px; }
-    .brand-sub  { font-size: 11.5px; color: rgba(255,255,255,.4); margin-top: 2px; }
+    .brand-sub  { font-size: 12.5px; color: rgba(255,255,255,.4); margin-top: 2px; }
 
     .sidebar-goals {
       padding: 16px 22px;
       border-bottom: 1px solid rgba(255,255,255,0.07);
     }
     .sidebar-label {
-      font-size: 9px; font-weight: 700; letter-spacing: .15em;
+      font-size: 10px; font-weight: 700; letter-spacing: .15em;
       text-transform: uppercase; color: rgba(255,255,255,.3); margin-bottom: 10px;
     }
     .goal-line {
-      font-size: 11.5px; color: rgba(255,255,255,.65);
+      font-size: 12.5px; color: rgba(255,255,255,.65);
       padding: 4px 0; display: flex; gap: 8px; align-items: baseline; line-height: 1.45;
     }
     .goal-dot {
@@ -97,14 +97,14 @@
       width: 24px; height: 24px; border-radius: 50%;
       background: rgba(255,255,255,.08);
       display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 700; flex-shrink: 0;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
     }
     .section-btn.done .sec-num { background: var(--tulip); color: var(--midnight); }
     .sec-info { flex: 1; min-width: 0; }
-    .sec-name  { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sec-lead  { font-size: 10px; color: rgba(255,255,255,.3); margin-top: 1px; }
+    .sec-name  { font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sec-lead  { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 1px; }
     .sec-mins  {
-      font-size: 10.5px; font-weight: 600; padding: 2px 7px;
+      font-size: 11.5px; font-weight: 600; padding: 2px 7px;
       background: rgba(255,255,255,.07); border-radius: 20px;
       color: rgba(255,255,255,.4); white-space: nowrap; flex-shrink: 0;
     }
@@ -114,19 +114,20 @@
       border-top: 1px solid rgba(255,255,255,0.07);
     }
     .total-label {
-      font-size: 9px; font-weight: 700; letter-spacing: .14em;
+      font-size: 10px; font-weight: 700; letter-spacing: .14em;
       text-transform: uppercase; color: rgba(255,255,255,.3);
       margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
     }
-    .total-elapsed { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: rgba(255,255,255,.55); }
+    .total-elapsed { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: rgba(255,255,255,.55); }
     .meeting-bar-track { height: 3px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; }
     .meeting-bar-fill  { height: 100%; background: var(--tulip); border-radius: 4px; transition: width 1s linear; }
     .meta-row { display: flex; gap: 14px; margin-top: 10px; }
-    .meta-item { font-size: 11px; color: rgba(255,255,255,.38); }
+    .meta-item { font-size: 12px; color: rgba(255,255,255,.38); }
     .meta-item strong { color: rgba(255,255,255,.6); font-weight: 600; }
-    .sync-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 10px; color: rgba(255,255,255,.35); }
+    .sync-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: rgba(255,255,255,.35); }
     .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.2); flex-shrink: 0; transition: background .4s; }
-    .sync-dot.flash { background: var(--tulip); }
+    .sync-dot.connected { background: var(--tulip); }
+    .sync-dot.flash { background: #d4f040; }
 
     /* ── MAIN ────────────────────────────────────────────────────── */
     .main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
@@ -137,9 +138,9 @@
       padding: 16px 36px; display: flex; align-items: center; gap: 28px; flex-shrink: 0;
     }
     .section-title-block { flex: 1; }
-    .curr-eyebrow { font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 4px; }
-    .curr-name    { font-size: 22px; font-weight: 800; letter-spacing: -.025em; line-height: 1.15; }
-    .curr-desc    { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; }
+    .curr-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 4px; }
+    .curr-name    { font-size: 23px; font-weight: 800; letter-spacing: -.025em; line-height: 1.15; }
+    .curr-desc    { font-size: 13.5px; color: var(--text-muted); margin-top: 3px; }
 
     /* ── TIMER ───────────────────────────────────────────────────── */
     .timer-block  { display: flex; flex-direction: column; align-items: center; gap: 9px; }
@@ -181,28 +182,28 @@
       display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
       padding: 10px 14px; background: var(--bg);
       border: 1px solid var(--border); border-radius: var(--radius-sm);
-      margin-bottom: 12px; font-size: 11.5px;
+      margin-bottom: 12px; font-size: 12.5px;
     }
-    .sc-key-label { font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); margin-right: 4px; }
+    .sc-key-label { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); margin-right: 4px; }
     .sc-key-item  { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
-    table.sc { width: 100%; border-collapse: collapse; font-size: 12.5px; white-space: nowrap; background: var(--surface); }
+    table.sc { width: 100%; border-collapse: collapse; font-size: 13.5px; white-space: nowrap; background: var(--surface); }
     table.sc thead tr { background: var(--surface); border-bottom: 1.5px solid var(--border); }
     table.sc thead th {
       padding: 9px 12px; text-align: left;
-      font-size: 9.5px; font-weight: 700; letter-spacing: .1em;
+      font-size: 10.5px; font-weight: 700; letter-spacing: .1em;
       text-transform: uppercase; color: var(--text-faint);
     }
-    table.sc thead th.week-head { text-align: right; color: var(--text-faint); font-size: 9px; }
+    table.sc thead th.week-head { text-align: right; color: var(--text-faint); font-size: 10px; }
     table.sc thead th.week-head.is-latest-head { color: var(--midnight); font-weight: 700; }
     table.sc thead th.status-head { text-align: center; }
     table.sc tbody tr { border-bottom: 1px solid var(--border-light); transition: background .1s; }
     table.sc tbody tr:last-child { border-bottom: none; }
     table.sc tbody tr:hover { background: var(--bg); }
     table.sc td { padding: 10px 12px; vertical-align: middle; }
-    table.sc td.kpi-cell   { font-weight: 600; font-size: 12px; }
+    table.sc td.kpi-cell   { font-weight: 600; font-size: 13px; }
     table.sc td.owner-cell { color: var(--text-muted); max-width: 120px; white-space: normal; }
-    table.sc td.target-cell { font-size: 12px; color: var(--text-muted); }
-    table.sc td.week-cell  { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+    table.sc td.target-cell { font-size: 13px; color: var(--text-muted); }
+    table.sc td.week-cell  { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
     table.sc td.week-cell.is-latest { color: var(--midnight); font-weight: 700; }
     table.sc td.week-cell.is-empty  { color: var(--text-faint); opacity: .5; }
     table.sc td.status-cell { text-align: center; }
@@ -211,7 +212,7 @@
 
     .badge {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 700; padding: 3px 10px;
+      font-size: 12px; font-weight: 700; padding: 3px 10px;
       border-radius: 20px; white-space: nowrap;
     }
     .badge-green  { background: var(--tulip-pale); color: var(--tulip-dark); }
@@ -225,7 +226,7 @@
     /* ── STATUS TOGGLE ───────────────────────────────────────────── */
     .status-toggle {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 700; padding: 4px 12px;
+      font-size: 12px; font-weight: 700; padding: 4px 12px;
       border-radius: 20px; border: none; cursor: pointer;
       transition: all .15s; white-space: nowrap;
     }
@@ -246,10 +247,10 @@
       border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 14px;
     }
     .q3-banner-label {
-      font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
       color: var(--tulip-dark); white-space: nowrap;
     }
-    .q3-banner-text { font-size: 13px; font-weight: 600; color: var(--midnight); }
+    .q3-banner-text { font-size: 14px; font-weight: 600; color: var(--midnight); }
     .rock-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 16px 20px;
@@ -259,40 +260,40 @@
     .rock-card.off-track { border-left-color: #EF4444; }
     .rock-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
     .rock-num-badge {
-      font-size: 10px; font-weight: 700; color: var(--text-faint);
+      font-size: 11px; font-weight: 700; color: var(--text-faint);
       background: var(--bg); border: 1px solid var(--border);
       width: 22px; height: 22px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; margin-top: 1px;
     }
-    .rock-card-title { font-size: 14px; font-weight: 700; line-height: 1.35; flex: 1; }
+    .rock-card-title { font-size: 15px; font-weight: 700; line-height: 1.35; flex: 1; }
     .rock-card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .rock-owner-tag {
-      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      font-size: 12px; font-weight: 600; color: var(--text-muted);
       background: var(--bg); border: 1px solid var(--border);
       padding: 2px 9px; border-radius: 20px;
     }
     .lever-tag {
-      font-size: 10.5px; font-weight: 700;
+      font-size: 11.5px; font-weight: 700;
       color: var(--tulip-dark); background: var(--tulip-pale);
       padding: 2px 9px; border-radius: 4px; white-space: nowrap;
     }
-    .rock-done-text { font-size: 11.5px; color: var(--text-muted); line-height: 1.55; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--border-light); }
+    .rock-done-text { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--border-light); }
 
     /* ── GOALS ───────────────────────────────────────────────────── */
     .goals-grid { display: flex; flex-direction: column; gap: 10px; }
     .goal-card  { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
     .goal-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .goal-person { font-size: 14px; font-weight: 700; }
+    .goal-person { font-size: 15px; font-weight: 700; }
     .goal-rock-tag {
-      font-size: 10.5px; font-weight: 700;
+      font-size: 11.5px; font-weight: 700;
       background: var(--tulip-pale); color: var(--tulip-dark);
       padding: 2px 8px; border-radius: 4px;
     }
     .goals-list { display: flex; flex-direction: column; gap: 5px; }
     .goal-item-row {
       display: flex; gap: 9px; align-items: baseline;
-      font-size: 12.5px; color: var(--text-muted); line-height: 1.5;
+      font-size: 13.5px; color: var(--text-muted); line-height: 1.5;
     }
     .goal-item-row::before { content: '→'; color: var(--tulip); font-weight: 700; flex-shrink: 0; }
     .goal-warn { color: var(--red) !important; font-weight: 600; }
@@ -309,7 +310,7 @@
     .issue-card.completed  { opacity: .5; }
     .issue-card.completed .issue-title { text-decoration: line-through; }
     .issues-section-label {
-      font-size: 9.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+      font-size: 10.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
       color: var(--text-faint); padding: 14px 2px 6px; display: flex; align-items: center; gap: 10px;
     }
     .issues-section-label::after {
@@ -322,11 +323,11 @@
       width: 38px; flex-shrink: 0;
       background: var(--bg); border-right: 1px solid var(--border-light);
       cursor: grab; user-select: none;
-      font-size: 11px; font-weight: 700; color: var(--text-faint);
+      font-size: 12px; font-weight: 700; color: var(--text-faint);
     }
     .issue-drag-num:active { cursor: grabbing; }
     .issue-drag-num .num-label { display: block; }
-    .issue-drag-num .dots-label { display: none; font-size: 14px; }
+    .issue-drag-num .dots-label { display: none; font-size: 15px; }
     .issue-drag-num:hover .num-label { display: none; }
     .issue-drag-num:hover .dots-label { display: block; }
     .issue-stripe { width: 4px; flex-shrink: 0; align-self: stretch; }
@@ -339,19 +340,19 @@
     }
     .issue-key-item {
       display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: var(--text-muted); font-weight: 500;
+      font-size: 12px; color: var(--text-muted); font-weight: 500;
     }
     .issue-key-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
     .issue-body { flex: 1; padding: 13px 16px; cursor: pointer; min-width: 0; }
     .issue-title-input {
       width: 100%; border: none; outline: none; background: transparent;
-      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 700;
+      font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 700;
       color: var(--text); line-height: 1.4; padding: 0; cursor: text;
     }
     .issue-title-input:focus { border-bottom: 1.5px solid var(--tulip); }
     .issue-card.completed .issue-title-input { text-decoration: line-through; }
-    .issue-owner-line { font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+    .issue-owner-line { font-size: 12px; color: var(--text-faint); margin-top: 3px; }
 
     .issue-actions {
       display: flex; align-items: center; padding: 0 14px; flex-shrink: 0;
@@ -359,7 +360,7 @@
     .btn-complete {
       width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border);
       background: var(--surface); cursor: pointer; display: flex; align-items: center;
-      justify-content: center; color: var(--text-faint); font-size: 10px;
+      justify-content: center; color: var(--text-faint); font-size: 11px;
       transition: all .15s; flex-shrink: 0;
     }
     .btn-complete:hover { border-color: var(--tulip); color: var(--tulip); }
@@ -370,11 +371,11 @@
       border-top: 1px solid var(--border-light); background: var(--bg);
     }
     .issue-card.expanded .issue-notes-section { display: block; }
-    .issue-notes-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+    .issue-notes-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
     .issue-notes-input {
       width: 100%; padding: 8px 12px; border: 1px solid var(--border);
       border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
-      font-size: 12.5px; color: var(--text); background: var(--surface);
+      font-size: 13.5px; color: var(--text); background: var(--surface);
       resize: none; min-height: 80px; outline: none; transition: border-color .15s;
       overflow-y: hidden;
     }
@@ -387,7 +388,7 @@
     .todos-table { width: 100%; border-collapse: collapse; }
     .todos-table thead { background: var(--surface); border-bottom: 1.5px solid var(--border); }
     .todos-table th {
-      text-align: left; font-size: 9.5px; font-weight: 700; letter-spacing: .1em;
+      text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: .1em;
       text-transform: uppercase; color: var(--text-faint);
       padding: 9px 14px;
     }
@@ -397,7 +398,7 @@
     .todos-table th.col-status { width: 160px; }
     .todos-table td {
       padding: 12px 16px; border-bottom: 1px solid var(--border-light);
-      font-size: 13px; vertical-align: middle;
+      font-size: 14px; vertical-align: middle;
     }
     .todos-table tr:last-child td { border-bottom: none; }
     .todos-table tr { transition: background .1s; }
@@ -407,23 +408,23 @@
     .todo-check-cell { text-align: center; }
     .todo-action-input {
       width: 100%; border: none; outline: none; background: transparent;
-      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); padding: 0;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); padding: 0;
     }
     .todo-action-input:focus { border-bottom: 1px solid var(--tulip); }
     .todo-circle {
       width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
       display: inline-flex; align-items: center; justify-content: center;
-      transition: all .15s; font-size: 11px; cursor: pointer;
+      transition: all .15s; font-size: 12px; cursor: pointer;
     }
     .todos-table tr.status-completed .todo-circle { background: var(--tulip); border-color: var(--tulip); color: #fff; }
     .todo-inline-input {
       width: 100%; border: none; outline: none; background: transparent;
-      font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
       padding: 0;
     }
     .todo-inline-input:focus { background: var(--surface); border-bottom: 1px solid var(--tulip); }
     .todo-status-btn {
-      display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px;
+      display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px;
       border-radius: 20px; white-space: nowrap; border: none; cursor: pointer;
       transition: all .15s;
     }
@@ -438,20 +439,20 @@
     }
     #lock-screen.hidden { display: none; }
     .lock-logo  { font-size: 36px; margin-bottom: 4px; }
-    .lock-title { color: #fff; font-size: 18px; font-weight: 700; }
-    .lock-sub   { color: rgba(255,255,255,.4); font-size: 13px; margin-bottom: 8px; }
+    .lock-title { color: #fff; font-size: 19px; font-weight: 700; }
+    .lock-sub   { color: rgba(255,255,255,.4); font-size: 14px; margin-bottom: 8px; }
     .lock-input {
       background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
-      border-radius: 8px; padding: 12px 16px; color: #fff; font-size: 15px;
+      border-radius: 8px; padding: 12px 16px; color: #fff; font-size: 16px;
       width: 280px; text-align: center; letter-spacing: .08em; outline: none;
     }
     .lock-input:focus { border-color: var(--tulip); }
     .lock-btn {
       background: var(--tulip); color: #fff; border: none; border-radius: 8px;
-      padding: 12px 0; font-size: 14px; font-weight: 600; cursor: pointer; width: 280px;
+      padding: 12px 0; font-size: 15px; font-weight: 600; cursor: pointer; width: 280px;
     }
     .lock-btn:hover { background: var(--tulip-dark); }
-    .lock-error { color: #ff6b6b; font-size: 12px; min-height: 16px; }
+    .lock-error { color: #ff6b6b; font-size: 13px; min-height: 16px; }
 
     /* ── DONE OVERLAY ────────────────────────────────────────────── */
     #done-overlay {
@@ -463,7 +464,7 @@
     #done-overlay.show { display: flex; }
     .done-icon  { font-size: 56px; margin-bottom: 8px; }
     .done-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 600; letter-spacing: -.01em; }
-    .done-sub   { font-size: 16px; color: rgba(255,255,255,.55); }
+    .done-sub   { font-size: 17px; color: rgba(255,255,255,.55); }
     .done-close { margin-top: 20px; }
 
     /* ── CAPTURE FLOATING BUTTON ────────────────────────────────── */
@@ -500,7 +501,7 @@
     }
     .capture-tabs { display: flex; gap: 0; }
     .capture-tab {
-      padding: 6px 14px 10px; font-size: 12.5px; font-weight: 600;
+      padding: 6px 14px 10px; font-size: 13.5px; font-weight: 600;
       color: var(--text-faint); background: none; border: none; cursor: pointer;
       border-bottom: 2px solid transparent; transition: all .12s; margin-bottom: -1px;
     }
@@ -509,7 +510,7 @@
     .capture-close {
       width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border);
       background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--text-faint); font-size: 14px; line-height: 1; transition: all .12s;
+      color: var(--text-faint); font-size: 15px; line-height: 1; transition: all .12s;
       margin-bottom: 8px; flex-shrink: 0;
     }
     .capture-close:hover { background: var(--bg); color: var(--text); }
@@ -521,7 +522,7 @@
     .capture-pane textarea {
       width: 100%; padding: 8px 11px; border: 1px solid var(--border);
       border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
-      font-size: 13px; color: var(--text); background: var(--bg);
+      font-size: 14px; color: var(--text); background: var(--bg);
       margin-bottom: 8px; outline: none; transition: border-color .15s;
     }
     .capture-pane textarea { resize: vertical; min-height: 56px; }
@@ -1087,6 +1088,7 @@ function init() {
         }
       });
       TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
+      timerSecs  = sectionTimers[0]; // keep timerSecs in sync after cache restore
     } catch(e) { console.warn('tulip: failed to restore section timings', e); }
   }
 
@@ -1104,6 +1106,8 @@ function init() {
     if (elSyncLabel) elSyncLabel.textContent = 'Connecting…';
     loadConfig();
     loadFromSheets();
+    loadRocks();
+    loadGoals();
     loadIssues();
     loadTodos();
     setInterval(loadFromSheets, 60000); // only scorecard refreshes; issues/todos load once
@@ -1512,7 +1516,7 @@ function buildSparklines() {
     const td = row.querySelector('.trend-cell');
     if (!td) return;
     const cells = [...row.querySelectorAll('.week-cell:not(.is-empty)')];
-    if (cells.length < 2) { td.innerHTML = '<span style="color:var(--text-faint);font-size:11px">—</span>'; return; }
+    if (cells.length < 2) { td.innerHTML = '<span style="color:var(--text-faint);font-size:12px">—</span>'; return; }
     const vals = cells.map(c => parseFloat(c.textContent.replace(/[$,%]/g, '').replace(/,/g, '')));
     const w = 60, h = 22;
     const min = Math.min(...vals), max = Math.max(...vals);
@@ -1594,11 +1598,14 @@ function hideEmptyWeekCols() {
 function sync(params) {
   if (!SYNC_URL) return;
   fetch(SYNC_URL + '?' + new URLSearchParams(params).toString(), { mode: 'no-cors' }).catch(() => {});
-  const dot = elSyncDot, label = elSyncLabel;
-  if (!dot) return;
-  dot.classList.add('flash');
-  if (label) label.textContent = 'Saved';
-  setTimeout(() => { dot.classList.remove('flash'); if (label) label.textContent = 'Synced'; }, 1200);
+  if (!elSyncDot) return;
+  elSyncDot.classList.add('flash');
+  if (elSyncLabel) elSyncLabel.textContent = 'Saved';
+  setTimeout(() => {
+    elSyncDot.classList.remove('flash');
+    elSyncDot.classList.add('connected');
+    if (elSyncLabel) elSyncLabel.textContent = 'Synced';
+  }, 1200);
 }
 
 let lastScorecardHash = null;
@@ -1606,78 +1613,84 @@ function renderScorecard(rows) {
   const hash = JSON.stringify(rows);
   if (hash === lastScorecardHash) return;
   lastScorecardHash = hash;
-  const table = document.querySelector('table.sc');
-  const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  if (!rows || rows.length < 2) return;
 
+  const table = document.querySelector('table.sc');
+  if (!table) return;
+
+  const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
   function toMonD(v) {
     if (!v && v !== 0) return '';
     const s = String(v).trim();
     if (/^[A-Za-z]{3}\s+\d{1,2}$/.test(s)) return s.toLowerCase();
-    const d = new Date(s);
-    if (!isNaN(d)) return MONTHS[d.getMonth()] + ' ' + d.getDate();
-    return s.toLowerCase();
+    // ISO dates (YYYY-MM-DD) must be noon-local to avoid timezone-shift off-by-one
+    const parsed = new Date(s.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(s) ? s + 'T12:00:00' : s);
+    if (!isNaN(parsed)) return MONTHS[parsed.getMonth()] + ' ' + parsed.getDate();
+    return '';
   }
 
-  if (table && rows && rows.length > 1) {
-    // Get HTML week head labels
-    const allTh = [...table.querySelector('thead tr').children];
-    const weekHeadTexts = allTh
-      .filter(th => th.classList.contains('week-head'))
-      .map(th => th.textContent.trim().toLowerCase());
-
-    // Find the header row in the sheet (row that has at least one matching week label)
-    let colMap = null; // sheetColIdx → htmlWeekIdx
-    let dataStart = 0;
-    for (let i = 0; i < Math.min(rows.length, 6); i++) {
-      const map = {};
-      rows[i].forEach((cell, ci) => {
-        const key = toMonD(cell);
-        const idx = weekHeadTexts.indexOf(key);
-        if (idx >= 0) map[ci] = idx;
-      });
-      if (Object.keys(map).length >= 1) { colMap = map; dataStart = i + 1; break; }
-    }
-
-    if (colMap) {
-      // Build KPI name → HTML row index (strip arrows + whitespace for fuzzy match)
-      const norm = s => s.replace(/[▲▼\s]/g, '').toLowerCase();
-      const kpiMap = {};
-      table.querySelectorAll('tbody tr').forEach(tr => {
-        const kc = tr.querySelector('.kpi-cell');
-        if (kc) kpiMap[norm(kc.textContent)] = tr;
-      });
-
-      rows.slice(dataStart).forEach(row => {
-        const kpiName = norm(String(row[1] || row[0] || ''));
-        if (!kpiName) return;
-        // 1) exact, 2) one contains the other, 3) significant word overlap (≥2 words shared)
-        const words = s => s.split(/(?=[A-Z])|(?<=[a-z])(?=[0-9])|(?<=[0-9])(?=[a-z])/).join(' ')
-          .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
-        const htmlRow = kpiMap[kpiName]
-          || Object.entries(kpiMap).find(([k]) => k.includes(kpiName) || kpiName.includes(k))?.[1]
-          || Object.entries(kpiMap).find(([k]) => {
-               const kw = words(k), nw = words(kpiName);
-               return kw.filter(w => nw.includes(w)).length >= Math.min(2, Math.min(kw.length, nw.length));
-             })?.[1];
-        if (!htmlRow) return;
-
-        const weekCells = [...htmlRow.querySelectorAll('.week-cell')];
-        Object.entries(colMap).forEach(([sc, wi]) => {
-          const cell = weekCells[wi];
-          if (!cell) return;
-          const v = String(row[sc] ?? '').trim();
-          if (v && v !== '0') {
-            cell.textContent = v;
-            cell.classList.remove('is-empty');
-            cell.style.display = '';
-          } else {
-            cell.textContent = '—';
-            cell.classList.add('is-empty');
-          }
-        });
-      });
+  // Find the header row: the one with the most date-like cells (most robust signal)
+  let headerRowIdx = -1;
+  let headerDateCols = {};
+  for (let i = 0; i < Math.min(rows.length, 8); i++) {
+    const dateCols = {};
+    rows[i].forEach((cell, ci) => { const d = toMonD(cell); if (d) dateCols[ci] = d; });
+    if (Object.keys(dateCols).length > Object.keys(headerDateCols).length) {
+      headerRowIdx = i;
+      headerDateCols = dateCols;
     }
   }
+  if (headerRowIdx < 0 || Object.keys(headerDateCols).length === 0) {
+    buildSparklines(); hideEmptyWeekCols(); normalizeLatestCells(); markLatestWeekHead();
+    return;
+  }
+
+  // Sort date columns left-to-right by sheet column index
+  const sortedDateCols = Object.entries(headerDateCols).sort((a, b) => +a[0] - +b[0]);
+
+  // Overwrite HTML week-head <th> labels with the sheet's actual dates
+  const weekHeadEls = [...table.querySelector('thead tr').querySelectorAll('.week-head')];
+  sortedDateCols.forEach(([, dateStr], wi) => {
+    if (!weekHeadEls[wi]) return;
+    const [mon, day] = dateStr.split(' ');
+    weekHeadEls[wi].textContent = mon.charAt(0).toUpperCase() + mon.slice(1) + ' ' + day;
+  });
+
+  // Build KPI name → HTML row map
+  const norm = s => s.replace(/[▲▼\s]/g, '').toLowerCase();
+  const kpiMap = {};
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    const kc = tr.querySelector('.kpi-cell');
+    if (kc) kpiMap[norm(kc.textContent)] = tr;
+  });
+
+  // Fill week-cells from sheet data rows
+  const words = s => s.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+  rows.slice(headerRowIdx + 1).forEach(row => {
+    const kpiName = norm(String(row[1] || row[0] || '').trim());
+    if (!kpiName) return;
+    const htmlRow = kpiMap[kpiName]
+      || Object.entries(kpiMap).find(([k]) => k.includes(kpiName) || kpiName.includes(k))?.[1]
+      || Object.entries(kpiMap).find(([k]) => {
+           const kw = words(k), nw = words(kpiName);
+           return kw.filter(w => nw.includes(w)).length >= Math.min(2, Math.min(kw.length, nw.length));
+         })?.[1];
+    if (!htmlRow) return;
+    const weekCells = [...htmlRow.querySelectorAll('.week-cell')];
+    sortedDateCols.forEach(([colIdx], wi) => {
+      const cell = weekCells[wi];
+      if (!cell) return;
+      const v = String(row[+colIdx] ?? '').trim();
+      if (v) {
+        cell.textContent = v;
+        cell.classList.remove('is-empty');
+        cell.style.display = '';
+      } else {
+        cell.textContent = '—';
+        cell.classList.add('is-empty');
+      }
+    });
+  });
 
   buildSparklines();
   hideEmptyWeekCols();
@@ -1729,9 +1742,14 @@ function applyConfig(rows) {
 
 function loadFromSheets() {
   jsonpLoad('getData', data => {
-    if (!data.ok) { if (elSyncLabel) elSyncLabel.textContent = 'Offline'; return; }
+    if (!data.ok) {
+      if (elSyncLabel) elSyncLabel.textContent = 'Offline';
+      elSyncDot?.classList.remove('connected');
+      return;
+    }
     renderScorecard(data.rows);
     if (elSyncLabel) elSyncLabel.textContent = 'Synced';
+    elSyncDot?.classList.add('connected');
   });
 }
 
@@ -1762,6 +1780,51 @@ function applyIssues(rows) {
   });
   sortIssues();
   renderIssues();
+}
+
+function loadRocks() {
+  jsonpLoad('getRocks', data => { if (data.ok && data.rows) applyRocks(data.rows); });
+}
+
+function applyRocks(rows) {
+  const SKIP = new Set(['', 'rock', 'rocks', 'title', '#', 'owner', 'status', 'lever', 'done']);
+  rows.forEach(row => {
+    const title = String(row[1] || '').trim();
+    const firstWord = title.replace(/[^a-z0-9 ]/gi, '').trim().toLowerCase().split(/\s+/)[0];
+    if (!title || SKIP.has(firstWord)) return;
+    const statusRaw = String(row[3] || '').toLowerCase(); // col D
+    const rock = rocks.find(r =>
+      r.title.toLowerCase().includes(title.toLowerCase().substring(0, 20)) ||
+      title.toLowerCase().includes(r.title.toLowerCase().substring(0, 20))
+    );
+    if (!rock) return;
+    if (statusRaw.includes('off') || statusRaw.includes('🔴')) rock.status = 'off-track';
+    else if (statusRaw.includes('on') || statusRaw.includes('🟢') || statusRaw.includes('done') || statusRaw.includes('complete')) rock.status = 'on-track';
+  });
+  renderRocks();
+}
+
+function loadGoals() {
+  jsonpLoad('getGoals', data => { if (data.ok && data.rows) applyGoals(data.rows); });
+}
+
+function applyGoals(rows) {
+  const SKIP = new Set(['', 'goal', 'goals', 'person', 'name', '#', 'owner', 'status']);
+  rows.forEach(row => {
+    const nameB    = String(row[1] || '').trim().toLowerCase(); // col B
+    const nameC    = String(row[2] || '').trim().toLowerCase(); // col C
+    const statusRaw = String(row[3] || '').toLowerCase(); // col D
+    const firstB = nameB.replace(/[^a-z0-9 ]/gi, '').split(/\s+/)[0];
+    if (SKIP.has(firstB) && SKIP.has(nameC.split(/\s+/)[0])) return;
+    const goal = goals.find(g => {
+      const p = g.person.toLowerCase();
+      return p === nameB || p === nameC || nameB.startsWith(p) || nameC.startsWith(p);
+    });
+    if (!goal) return;
+    if (statusRaw.includes('off') || statusRaw.includes('🔴')) goal.status = 'off-track';
+    else if (statusRaw.includes('on') || statusRaw.includes('🟢') || statusRaw.includes('done') || statusRaw.includes('complete')) goal.status = 'on-track';
+  });
+  renderGoals();
 }
 
 function loadTodos() {
