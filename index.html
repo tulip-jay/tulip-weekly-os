@@ -1072,9 +1072,14 @@ function issueCardHTML(issue, i) {
 
 function renderIssues() {
   const c = document.getElementById('issues-container');
-  // Only show active (non-completed) issues in the meeting view
-  const active = issues.filter(x => !x.completed);
-  c.innerHTML = active.map((issue, i) => issueCardHTML(issue, i)).join('');
+  const active    = issues.filter(x => !x.completed);
+  const completed = issues.filter(x =>  x.completed);
+  let html = active.map((issue, i) => issueCardHTML(issue, i)).join('');
+  if (completed.length) {
+    html += `<div class="issues-section-label">Completed (${completed.length})</div>`;
+    html += completed.map((issue, i) => issueCardHTML(issue, active.length + i)).join('');
+  }
+  c.innerHTML = html;
 }
 
 function autoResizeTextarea(el) {
@@ -1196,9 +1201,8 @@ function todoStatusLabel(s) {
   return 'Not started';
 }
 
-function renderTodos() {
-  const c = document.getElementById('todos-container');
-  c.innerHTML = todos.map(t => `
+function todoRowHTML(t) {
+  return `
     <tr class="status-${t.status}">
       <td class="todo-check-cell" onclick="toggleTodoDone(${t.id})">
         <div class="todo-circle">${t.status === 'completed' ? '✓' : ''}</div>
@@ -1221,7 +1225,22 @@ function renderTodos() {
           ${todoStatusLabel(t.status)}
         </button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+}
+
+function renderTodos() {
+  const c         = document.getElementById('todos-container');
+  const active    = todos.filter(t => t.status !== 'completed');
+  const completed = todos.filter(t => t.status === 'completed');
+  let html = active.map(t => todoRowHTML(t)).join('');
+  if (completed.length) {
+    // Separator row spanning all columns
+    html += `<tr class="todos-divider-row"><td colspan="5">
+      <div class="issues-section-label" style="margin:0;padding:10px 2px 4px">Completed (${completed.length})</div>
+    </td></tr>`;
+    html += completed.map(t => todoRowHTML(t)).join('');
+  }
+  c.innerHTML = html;
 }
 
 function toggleTodoDone(id) {
@@ -1651,12 +1670,22 @@ function loadIssues() {
 
 function applyIssues(rows) {
   // Col A=title, B=owner, C=priority, D=status, E=notes
-  const SKIP = ['discussion', 'issue', 'title', 'owner', 'priority', 'status', 'notes'];
-  const data = rows.filter(r => {
-    const cell = String(r[0] || '').replace(/[^a-z]/gi, '').toLowerCase();
-    return cell && !SKIP.includes(cell);
-  });
+  // Find header row (col A = 'discussion'/'issue'/'title'), then take rows until blank
+  let headerIdx = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const a = String(rows[i][0] || '').toLowerCase().trim();
+    if (a === 'discussion' || a === 'issue' || a === 'title') { headerIdx = i; break; }
+  }
+  if (headerIdx < 0) return;
+
+  const data = [];
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const text = String(rows[i][0] || '').trim();
+    if (!text) break; // stop at first blank
+    data.push(rows[i]);
+  }
   if (!data.length) return;
+
   issues = data.map((r, i) => {
     const priStr    = String(r[2] || '').toLowerCase();
     const statusStr = String(r[3] || '').toLowerCase();
