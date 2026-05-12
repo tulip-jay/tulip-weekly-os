@@ -659,7 +659,7 @@
       <div class="goals-grid" id="goals-container"></div>
     </div>
 
-    <!-- ── 4. ISSUES ──────────────────────────────────────────────── -->
+    <!-- ── 4. DISCUSSION ─────────────────────────────────────────── -->
     <div class="panel" id="panel-3">
       <div class="issue-key">
         <span class="issue-key-item"><span class="issue-key-dot" style="background:#EF4444"></span>High</span>
@@ -715,7 +715,7 @@
   <div class="capture-dialog">
     <div class="capture-header">
       <div class="capture-tabs">
-        <button class="capture-tab active" id="cap-tab-issue" onclick="switchCaptureTab('issue')">Issue</button>
+        <button class="capture-tab active" id="cap-tab-issue" onclick="switchCaptureTab('issue')">Discussion</button>
         <button class="capture-tab"        id="cap-tab-todo"  onclick="switchCaptureTab('todo')">To-Do</button>
       </div>
       <button class="capture-close" onclick="closeCapture()">✕</button>
@@ -723,7 +723,7 @@
     <div class="capture-body">
       <!-- Issue pane -->
       <div class="capture-pane active" id="cap-pane-issue">
-        <input id="cap-issue-title" placeholder="Describe the issue…" />
+        <input id="cap-issue-title" placeholder="Describe the discussion topic…" />
         <div class="capture-row">
           <input id="cap-issue-owner" placeholder="Owner" list="team-list" />
           <select id="cap-issue-priority" required>
@@ -735,7 +735,7 @@
         </div>
         <textarea id="cap-issue-notes" placeholder="Notes (optional)"></textarea>
         <div class="capture-actions">
-          <button class="btn btn-primary"   onclick="submitCaptureIssue()">Add Issue</button>
+          <button class="btn btn-primary"   onclick="submitCaptureIssue()">Add Discussion</button>
           <button class="btn btn-secondary" onclick="closeCapture()">Cancel</button>
         </div>
       </div>
@@ -781,7 +781,7 @@ const SECTIONS = [
   { name:'📊 Scorecard', shortName:'Scorecard', desc:'Call your KPIs — on track or off track. No debate.',               lead:'Everyone',  mins:10 },
   { name:'🪨 Rocks',     shortName:'Rocks',     desc:'One sentence per rock. On track / off track / done.',               lead:'Owners',    mins:10 },
   { name:'🎯 Goals',     shortName:'Goals',     desc:'Quick round — on track or not. One sentence each.',                 lead:'Everyone',  mins:10 },
-  { name:'🔥 Issues',    shortName:'Issues',    desc:'Top 3 only. Identify → Discuss → Solve.',                          lead:'Everyone',  mins:25 },
+  { name:'💬 Discussion', shortName:'Discussion', desc:'Top 3 only. Identify → Discuss → Solve.',                          lead:'Everyone',  mins:25 },
   { name:'✅ To-Dos',    shortName:'To-Dos',    desc:'Every commitment = owner + due date. Charlotte captures live.',     lead:'Charlotte', mins: 5 },
 ];
 let TOTAL_MINS = 60;
@@ -1496,10 +1496,15 @@ function renderScorecard(rows) {
   const tbody = table.querySelector('tbody');
   tbody.innerHTML = '';
 
-  const skipKpi = new Set(['kpi','metric','name','item','owner','target','goal','status','no','']);
+  const skipKpi      = new Set(['kpi','metric','name','item','owner','target','goal','status','no','key','legend','note','notes','source']);
+  const skipKpiStart = ['key','legend','note','higher','lower','source','red ','green '];
   rows.slice(headerRowIdx + 1).forEach(row => {
-    const kpiName = String(row[kpiCol] || '').trim();
-    if (!kpiName || skipKpi.has(kpiName.replace(/[^a-z]/gi,'').toLowerCase())) return;
+    const kpiName    = String(row[kpiCol] || '').trim();
+    const kpiNormed  = kpiName.replace(/[^a-z]/gi,'').toLowerCase();
+    const kpiLower   = kpiName.toLowerCase();
+    if (!kpiName) return;
+    if (skipKpi.has(kpiNormed)) return;
+    if (skipKpiStart.some(s => kpiLower.startsWith(s))) return;
 
     const tr = document.createElement('tr');
     // Strip direction arrow from display name; show as small superscript
@@ -1646,7 +1651,7 @@ function loadIssues() {
 
 function applyIssues(rows) {
   // Col A=title, B=owner, C=priority, D=status, E=notes
-  const SKIP = ['issue', 'title', 'owner', 'priority', 'status', 'notes'];
+  const SKIP = ['discussion', 'issue', 'title', 'owner', 'priority', 'status', 'notes'];
   const data = rows.filter(r => {
     const cell = String(r[0] || '').replace(/[^a-z]/gi, '').toLowerCase();
     return cell && !SKIP.includes(cell);
