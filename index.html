@@ -1022,7 +1022,7 @@ function init() {
     loadFromSheets();
     loadIssues();
     loadTodos();
-    setInterval(() => { loadConfig(); loadFromSheets(); loadIssues(); loadTodos(); }, 60000);
+    setInterval(loadFromSheets, 60000); // only scorecard refreshes; issues/todos load once
   }
 }
 
@@ -1194,6 +1194,7 @@ function priorityClass(p) { return 'priority-' + p; }
 function toggleIssueComplete(id) {
   const issue = issues.find(x => x.id === id);
   issue.completed = !issue.completed;
+  issues.sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
   renderIssues();
   syncSheet({ action: 'markIssueComplete', issueTitle: issue.title, completed: String(issue.completed) });
   flashSync();
@@ -1447,7 +1448,73 @@ function flashSync() {
   }, 1200);
 }
 
-function renderScorecard() {
+function renderScorecard(rows) {
+  const table = document.querySelector('table.sc');
+  const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+  function toMonD(v) {
+    if (!v && v !== 0) return '';
+    const s = String(v).trim();
+    if (/^[A-Za-z]{3}\s+\d{1,2}$/.test(s)) return s.toLowerCase();
+    const d = new Date(s);
+    if (!isNaN(d)) return MONTHS[d.getMonth()] + ' ' + d.getDate();
+    return s.toLowerCase();
+  }
+
+  if (table && rows && rows.length > 1) {
+    // Get HTML week head labels
+    const allTh = [...table.querySelector('thead tr').children];
+    const weekHeadTexts = allTh
+      .filter(th => th.classList.contains('week-head'))
+      .map(th => th.textContent.trim().toLowerCase());
+
+    // Find the header row in the sheet (row that has at least one matching week label)
+    let colMap = null; // sheetColIdx → htmlWeekIdx
+    let dataStart = 0;
+    for (let i = 0; i < Math.min(rows.length, 6); i++) {
+      const map = {};
+      rows[i].forEach((cell, ci) => {
+        const key = toMonD(cell);
+        const idx = weekHeadTexts.indexOf(key);
+        if (idx >= 0) map[ci] = idx;
+      });
+      if (Object.keys(map).length >= 1) { colMap = map; dataStart = i + 1; break; }
+    }
+
+    if (colMap) {
+      // Build KPI name → HTML row index (strip arrows + whitespace for fuzzy match)
+      const norm = s => s.replace(/[▲▼\s]/g, '').toLowerCase();
+      const kpiMap = {};
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const kc = tr.querySelector('.kpi-cell');
+        if (kc) kpiMap[norm(kc.textContent)] = tr;
+      });
+
+      rows.slice(dataStart).forEach(row => {
+        const kpiName = norm(String(row[1] || row[0] || ''));
+        if (!kpiName) return;
+        const htmlRow = kpiMap[kpiName]
+          || Object.entries(kpiMap).find(([k]) => k.startsWith(kpiName.slice(0, 8)) || kpiName.startsWith(k.slice(0, 8)))?.[1];
+        if (!htmlRow) return;
+
+        const weekCells = [...htmlRow.querySelectorAll('.week-cell')];
+        Object.entries(colMap).forEach(([sc, wi]) => {
+          const cell = weekCells[wi];
+          if (!cell) return;
+          const v = String(row[sc] ?? '').trim();
+          if (v && v !== '0') {
+            cell.textContent = v;
+            cell.classList.remove('is-empty');
+            cell.style.display = '';
+          } else {
+            cell.textContent = '—';
+            cell.classList.add('is-empty');
+          }
+        });
+      });
+    }
+  }
+
   buildSparklines();
   hideEmptyWeekCols();
   normalizeLatestCells();
@@ -1484,8 +1551,10 @@ function applyConfig(rows) {
     }
   });
   TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
-  timerSecs = sectionTimers[currentIdx];
-  renderTimer();
+  if (!timerRunning) {
+    timerSecs = sectionTimers[currentIdx];
+    renderTimer();
+  }
   buildNav();
 }
 
