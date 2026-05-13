@@ -916,8 +916,7 @@ function applyIssues(rows) {
   const data = [];
   for (let i = startIdx; i < rows.length; i++) {
     const text = String(rows[i][0] || '').trim();
-    if (!text) break; // stop at first blank
-    data.push(rows[i]);
+    if (text) data.push(rows[i]); // skip blanks but keep going — don't stop on first blank
   }
   if (!data.length) return;
 
@@ -1000,12 +999,11 @@ function applyTodos(rows) {
   }
   const startIdx = headerIdx >= 0 ? headerIdx + 1 : 6;
 
-  // Collect rows after the header, stopping at the first blank col-A cell
+  // Collect rows after the header, skipping blanks
   const dataRows = [];
   for (let i = startIdx; i < rows.length; i++) {
     const text = String(rows[i][0] || '').trim();
-    if (!text) break; // blank row = end of list
-    dataRows.push(rows[i]);
+    if (text) dataRows.push(rows[i]); // skip blanks but keep going
   }
   if (!dataRows.length) return;
 
