@@ -462,17 +462,42 @@ function todoRowHTML(t) {
     </tr>`;
 }
 
+function completedTodoCardHTML(t) {
+  const due = t.due ? ` · ${t.due}` : '';
+  const sub = (t.owner || t.due) ? `<div class="issue-owner-line">${t.owner}${due}</div>` : '';
+  return `
+    <div class="issue-card completed" id="todo-card-${t.id}">
+      <div class="issue-top">
+        <div class="issue-stripe priority-medium"></div>
+        <div class="issue-body">
+          <input class="issue-title-input" value="${t.text.replace(/"/g,'&quot;')}"
+                 onblur="saveTodoField(${t.id},'text',this.value)" />
+          ${sub}
+        </div>
+        <div class="issue-actions">
+          <button class="btn-complete" title="Reopen" onclick="toggleTodoDone(${t.id})">✓</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderTodos() {
-  const c         = document.getElementById('todos-container');
   const active    = todos.filter(t => t.status !== 'completed');
   const completed = todos.filter(t => t.status === 'completed');
-  let html = active.map(t => todoRowHTML(t)).join('');
+
+  // Active todos — table rows
+  document.getElementById('todos-container').innerHTML = active.map(t => todoRowHTML(t)).join('');
+
+  // Completed todos — cards below the table, matching Discussion section style
+  const completedEl = document.getElementById('todos-completed');
+  if (!completedEl) return;
   if (completed.length) {
-    // Separator row spanning all columns
-    html += `<tr class="todos-divider-row"><td colspan="5"><div class="issues-section-label">Completed (${completed.length})</div></td></tr>`;
-    html += completed.map(t => todoRowHTML(t)).join('');
+    completedEl.innerHTML =
+      `<div class="issues-section-label">Completed (${completed.length})</div>` +
+      `<div class="issues-list">${completed.map(t => completedTodoCardHTML(t)).join('')}</div>`;
+  } else {
+    completedEl.innerHTML = '';
   }
-  c.innerHTML = html;
 }
 
 function toggleTodoDone(id) {
@@ -599,7 +624,11 @@ function buildSparklines() {
     ]);
     const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
     const lp = pts[pts.length - 1];
-    const color = '#111111';
+    // Color from status badge in the same row
+    const badge = row.querySelector('.status-cell .badge');
+    const color = badge?.classList.contains('badge-green') ? '#8bac14'
+                : badge?.classList.contains('badge-red')   ? '#EF4444'
+                : '#9CA3AF'; // gray for no-target / no-data
     td.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" fill="none" style="display:block;margin:0 auto">
       <path d="${d}" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       <circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="2.5" fill="${color}"/>
@@ -902,22 +931,45 @@ function loadIssues() {
 
 function applyIssues(rows) {
   // Col A=title, B=owner, C=priority, D=status, E=notes
-  // Find header row by substring match in first 10 rows; skip branding rows (contain '·')
-  // Fallback: data starts at row index 6 (A7) per sheet layout
-  const HEADER_TERMS = ['discussion', 'issue', 'title', 'topic', 'item', '#'];
+  //
+  // Header detection strategy:
+  //   1. Look for the true COLUMN header row: col A has a header keyword AND col B has 'owner'/'person'
+  //      This skips section-title rows like "ISSUES — Identify → Discuss → Solve" which only fill col A
+  //   2. Fallback: exact-match single col-A header word (e.g. bare "Issue" or "Discussion")
+  //   3. Last resort: default to row-index 6 (A7 per sheet layout)
+  const COL_TERMS = ['discussion', 'issue', 'title', 'topic', 'item', '#'];
+  const META_EXACT = new Set(['discussion', 'issue', 'title', 'topic', 'item', '#',
+                               'owner', 'priority', 'status', 'notes']);
   let headerIdx = -1;
-  for (let i = 0; i < Math.min(10, rows.length); i++) {
+
+  // Pass 1 — two-column check (most reliable)
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
     const a = String(rows[i][0] || '').toLowerCase().trim();
-    if (a.includes('·')) continue; // skip branding/separator rows
-    if (HEADER_TERMS.some(t => a.includes(t))) { headerIdx = i; break; }
+    const b = String(rows[i][1] || '').toLowerCase().trim();
+    if (COL_TERMS.some(t => a.includes(t)) && (b.includes('owner') || b.includes('person'))) {
+      headerIdx = i; break;
+    }
+  }
+  // Pass 2 — single col-A exact match fallback
+  if (headerIdx < 0) {
+    for (let i = 0; i < Math.min(rows.length, 15); i++) {
+      const a = String(rows[i][0] || '').toLowerCase().trim();
+      if (a.includes('·')) continue;
+      if (META_EXACT.has(a)) { headerIdx = i; break; }
+    }
   }
   const startIdx = headerIdx >= 0 ? headerIdx + 1 : 6;
 
-  const data = [];
-  for (let i = startIdx; i < rows.length; i++) {
-    const text = String(rows[i][0] || '').trim();
-    if (text) data.push(rows[i]); // skip blanks but keep going — don't stop on first blank
-  }
+  // Filter helper — catches any stray metadata rows that slip past startIdx
+  const isMeta = r => {
+    const a = String(r[0] || '').trim();
+    if (!a) return true;
+    if (a.includes('·')) return true;                                    // instruction/branding rows
+    if (META_EXACT.has(a.replace(/[^a-z#]/gi, '').toLowerCase())) return true; // bare header words
+    return false;
+  };
+
+  const data = rows.slice(startIdx).filter(r => !isMeta(r));
   if (!data.length) return;
 
   issues = data.map((r, i) => {
