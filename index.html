@@ -43,11 +43,6 @@
     <div class="meeting-bar-track">
       <div class="meeting-bar-fill" id="meeting-bar" style="width:0%"></div>
     </div>
-    <div class="meta-row">
-      <div class="meta-item"><strong>Lead:</strong> TBD</div>
-      <div class="meta-item"><strong>Rec:</strong> Charlotte</div>
-      <div class="meta-item"><strong>60 min</strong></div>
-    </div>
     <div class="sync-status">
       <span class="sync-dot" id="sync-dot"></span>
       <span id="sync-label">Not connected</span>
@@ -80,21 +75,15 @@
     <!-- ── HOME ──────────────────────────────────────────────────── -->
     <div id="panel-home" class="home-panel">
       <div class="home-center">
-        <div class="home-logo">🌷</div>
-        <div class="home-brand">Tulip Goods Co</div>
+        <img id="home-logo-img" class="home-logo-img" src="" alt="Tulip">
         <h1 class="home-title">Weekly All-Hands</h1>
         <p class="home-date" id="home-date">—</p>
         <button class="btn-home-start" onclick="startMeeting()">Let's Start →</button>
       </div>
     </div>
 
-    <!-- ── 1. SEGUE ───────────────────────────────────────────────── -->
+    <!-- ── 1. SCORECARD ──────────────────────────────────────────── -->
     <div class="panel" id="panel-0">
-      <div id="segue-container"></div>
-    </div>
-
-    <!-- ── 2. SCORECARD ──────────────────────────────────────────── -->
-    <div class="panel" id="panel-1">
 
       <div class="sc-key">
         <span class="sc-key-label">Key</span>
@@ -127,7 +116,7 @@
     </div>
 
     <!-- ── 3. ROCKS ───────────────────────────────────────────────── -->
-    <div class="panel" id="panel-2">
+    <div class="panel" id="panel-1">
       <div class="q3-banner">
         <span class="q3-banner-label">Q3 Goal</span>
         <span class="q3-banner-text">$100K operating profit by September 30</span>
@@ -136,12 +125,12 @@
     </div>
 
     <!-- ── 4. GOALS ───────────────────────────────────────────────── -->
-    <div class="panel" id="panel-3">
+    <div class="panel" id="panel-2">
       <div class="goals-grid" id="goals-container"></div>
     </div>
 
     <!-- ── 5. DISCUSSION ─────────────────────────────────────────── -->
-    <div class="panel" id="panel-4">
+    <div class="panel" id="panel-3">
       <div class="issue-key">
         <span class="issue-key-item"><span class="issue-key-dot" style="background:#EF4444"></span>High</span>
         <span class="issue-key-item"><span class="issue-key-dot" style="background:#F59E0B"></span>Medium</span>
@@ -161,7 +150,7 @@
     </datalist>
 
     <!-- ── 6. TO-DOS ───────────────────────────────────────────────── -->
-    <div class="panel" id="panel-5">
+    <div class="panel" id="panel-4">
       <div class="todos-wrap">
         <table class="todos-table">
           <thead>
@@ -180,7 +169,7 @@
     </div>
 
     <!-- ── 7. RATING ──────────────────────────────────────────────── -->
-    <div class="panel" id="panel-6">
+    <div class="panel" id="panel-5">
       <div id="rating-container"></div>
     </div>
 
@@ -202,7 +191,7 @@
   <div class="capture-dialog">
     <div class="capture-header">
       <div class="capture-tabs">
-        <button class="capture-tab active" id="cap-tab-issue" onclick="switchCaptureTab('issue')">Discussion</button>
+        <button class="capture-tab active" id="cap-tab-issue" onclick="switchCaptureTab('issue')">Issue</button>
         <button class="capture-tab"        id="cap-tab-todo"  onclick="switchCaptureTab('todo')">To-Do</button>
       </div>
       <button class="capture-close" onclick="closeCapture()">✕</button>
@@ -210,7 +199,7 @@
     <div class="capture-body">
       <!-- Issue pane -->
       <div class="capture-pane active" id="cap-pane-issue">
-        <input id="cap-issue-title" placeholder="Describe the discussion topic…" />
+        <input id="cap-issue-title" placeholder="Describe the issue…" />
         <div class="capture-row">
           <input id="cap-issue-owner" placeholder="Owner" list="team-list" />
           <select id="cap-issue-priority" required>
@@ -222,7 +211,7 @@
         </div>
         <textarea id="cap-issue-notes" placeholder="Notes (optional)"></textarea>
         <div class="capture-actions">
-          <button class="btn btn-primary"   onclick="submitCaptureIssue()">Add Discussion</button>
+          <button class="btn btn-primary"   onclick="submitCaptureIssue()">Add Issue</button>
           <button class="btn btn-secondary" onclick="closeCapture()">Cancel</button>
         </div>
       </div>

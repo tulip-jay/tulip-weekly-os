@@ -12,15 +12,14 @@ function checkPassword() {
 
 /* ══ DATA ════════════════════════════════════════════════════════ */
 const SECTIONS = [
-  { name:'🎉 Segue',      shortName:'Segue',      desc:'Share one piece of good news — personal or professional.',            lead:'Everyone',  mins: 2 },
-  { name:'📊 Scorecard',  shortName:'Scorecard',  desc:'Call your KPIs — on track or off track. No debate.',                 lead:'Everyone',  mins:10 },
-  { name:'🪨 Rocks',      shortName:'Rocks',      desc:'One sentence per rock. On track / off track / done.',                 lead:'Owners',    mins:10 },
-  { name:'🎯 Goals',      shortName:'Goals',      desc:'Quick round — on track or not. One sentence each.',                   lead:'Everyone',  mins:10 },
-  { name:'💬 Discussion', shortName:'Discussion', desc:'Top 3 only. Identify → Discuss → Solve.',                             lead:'Everyone',  mins:25 },
-  { name:'✅ To-Dos',     shortName:'To-Dos',     desc:'Every commitment = owner + due date. Charlotte captures live.',       lead:'Charlotte', mins: 5 },
-  { name:'⭐ Rating',     shortName:'Rating',     desc:'Rate this week\'s meeting 1–5 for each team member.',                lead:'Everyone',  mins: 2 },
+  { name:'📊 Scorecard',  shortName:'Scorecard',  desc:'Call your KPIs — on track or off track. No debate.',               lead:'Everyone',  mins:10 },
+  { name:'🪨 Rocks',      shortName:'Rocks',      desc:'One sentence per rock. On track / off track / done.',               lead:'Owners',    mins:10 },
+  { name:'🎯 Goals',      shortName:'Goals',      desc:'Quick round — on track or not. One sentence each.',                 lead:'Everyone',  mins:10 },
+  { name:'💬 Issues',     shortName:'Issues',     desc:'Top 3 only. Identify → Discuss → Solve.',                           lead:'Everyone',  mins:25 },
+  { name:'✅ To-Dos',     shortName:'To-Dos',     desc:'Every commitment = owner + due date. Charlotte captures live.',     lead:'Charlotte', mins: 5 },
+  { name:'⭐ Rating',     shortName:'Rating',     desc:'Rate this week\'s meeting 1–5 · then log to close out.',           lead:'Everyone',  mins: 2 },
 ];
-let TOTAL_MINS = 64;
+let TOTAL_MINS = 62;
 
 const TEAM = ['Bitty','Charlotte','Jay','Lori','Mike','Vendela'];
 let ratings = {};
@@ -74,10 +73,12 @@ let timerInterval = null;
 let totalElapsed  = 0;
 let meetingTick   = null;
 let sectionDone   = new Array(SECTIONS.length).fill(false);
+let sectionUsed   = new Array(SECTIONS.length).fill(0);   // actual seconds used
 let sectionTimers = SECTIONS.map(s => s.mins * 60); // per-section saved time
 let timerSecs     = sectionTimers[0];
 
 function renderTimer() {
+  if (!elTimerDisplay || !elTimerProg) return;
   const abs  = Math.abs(timerSecs);
   const sign = timerSecs < 0 ? '-' : '';
   const m    = Math.floor(abs / 60);
@@ -119,6 +120,8 @@ function tickMeeting() {
 }
 
 function nextSection() {
+  // Record actual time used before stopping
+  sectionUsed[currentIdx] = Math.max(0, SECTIONS[currentIdx].mins * 60 - timerSecs);
   stopTimer();
   sectionDone[currentIdx] = true;
   if (currentIdx < SECTIONS.length - 1) {
@@ -144,19 +147,24 @@ function init() {
   const cachedMins = localStorage.getItem('tulip-section-mins');
   if (cachedMins) {
     try {
-      JSON.parse(cachedMins).forEach((m, i) => {
-        if (SECTIONS[i] && !isNaN(m) && m > 0) {
-          SECTIONS[i].mins = m;
-          sectionTimers[i] = m * 60;
-        }
-      });
-      TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
-      timerSecs  = sectionTimers[0]; // keep timerSecs in sync after cache restore
-    } catch(e) { console.warn('tulip: failed to restore section timings', e); }
+      const parsed = JSON.parse(cachedMins);
+      // Discard cache if section count changed (prevents stale data from old builds)
+      if (parsed.length !== SECTIONS.length) {
+        localStorage.removeItem('tulip-section-mins');
+      } else {
+        parsed.forEach((m, i) => {
+          if (SECTIONS[i] && !isNaN(m) && m > 0) {
+            SECTIONS[i].mins = m;
+            sectionTimers[i] = m * 60;
+          }
+        });
+        TOTAL_MINS = SECTIONS.reduce((sum, s) => sum + s.mins, 0);
+        timerSecs  = sectionTimers[0];
+      }
+    } catch(e) { localStorage.removeItem('tulip-section-mins'); }
   }
 
   buildNav();
-  renderSegue();
   renderRating();
   renderRocks();
   renderGoals();
@@ -214,9 +222,26 @@ function goToSection(idx) {
   document.getElementById('curr-desc').textContent    = SECTIONS[idx].desc;
 
   document.querySelectorAll('.section-btn').forEach((btn, i) => {
+    const done = sectionDone[i] && i !== idx;
     btn.classList.toggle('active', i===idx);
-    btn.classList.toggle('done', sectionDone[i] && i!==idx);
-    btn.querySelector('.sec-num').textContent = (sectionDone[i] && i!==idx) ? '✓' : (i+1);
+    btn.classList.toggle('done', done);
+    btn.querySelector('.sec-num').textContent = done ? '✓' : (i+1);
+    // Show actual time used vs. allocated once a section is done
+    const minsEl = btn.querySelector('.sec-mins');
+    if (minsEl) {
+      if (done) {
+        const u   = sectionUsed[i];
+        const mm  = Math.floor(u / 60);
+        const ss  = u % 60;
+        const over = u > SECTIONS[i].mins * 60;
+        minsEl.textContent = `${mm}:${ss.toString().padStart(2,'0')}`;
+        minsEl.classList.toggle('time-over',  over);
+        minsEl.classList.toggle('time-under', !over);
+      } else {
+        minsEl.textContent = `${SECTIONS[i].mins}m`;
+        minsEl.classList.remove('time-over','time-under');
+      }
+    }
   });
 
   // On the Rating section (last), hide the timer block — no countdown needed there
@@ -239,6 +264,11 @@ function showHomepage() {
 }
 
 function buildHomepage() {
+  // Mirror the sidebar logo onto the homepage
+  const brandLogo = document.querySelector('.brand-logo');
+  const homeLogo  = document.getElementById('home-logo-img');
+  if (brandLogo && homeLogo) homeLogo.src = brandLogo.src;
+
   // Use the meeting date from the sidebar brand-sub ("Weekly All Hands · May 12, 2026")
   const brandSub = document.querySelector('.brand-sub');
   let dateStr = '';
@@ -253,18 +283,6 @@ function buildHomepage() {
 function startMeeting() {
   goToSection(0);
   startTimer(); // auto-start on meeting begin
-}
-
-/* ══ SEGUE ═══════════════════════════════════════════════════════ */
-function renderSegue() {
-  const c = document.getElementById('segue-container');
-  if (!c) return;
-  c.innerHTML = `
-    <div class="segue-prompt">
-      <div class="segue-icon">🎉</div>
-      <div class="segue-heading">Good News Round</div>
-      <div class="segue-sub">Anyone who wants to share — share one piece of good news. Personal or professional, anything goes.</div>
-    </div>`;
 }
 
 /* ══ RATING ══════════════════════════════════════════════════════ */
@@ -335,12 +353,6 @@ function logMeeting() {
     week:       week,
     totalTime:  totalTime,
     average:    avg,
-    bitty:      ratings['Bitty']     || '',
-    charlotte:  ratings['Charlotte'] || '',
-    jay:        ratings['Jay']       || '',
-    lori:       ratings['Lori']      || '',
-    mike:       ratings['Mike']      || '',
-    vendela:    ratings['Vendela']   || '',
     recording:  '',
   });
 
