@@ -50,6 +50,13 @@
     }
     .brand-logo { height: 30px; width: auto; display: block; margin-bottom: 8px; }
     .brand-sub  { font-size: 12.5px; color: rgba(255,255,255,.4); margin-top: 2px; }
+    .btn-home-nav {
+      margin-top: 10px; padding: 5px 12px; border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.55); font-family: 'Inter', sans-serif;
+      font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all .12s;
+    }
+    .btn-home-nav:hover { background: rgba(255,255,255,.12); color: rgba(255,255,255,.85); }
 
     .sidebar-goals {
       padding: 16px 22px;
@@ -530,4 +537,132 @@
     .capture-pane select:required:invalid { color: var(--text-faint); }
     .capture-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .capture-row input, .capture-row select { margin-bottom: 0; flex: 1; min-width: 0; }
+
+    /* ── HOMEPAGE ────────────────────────────────────────────────── */
+    body.home-mode .topbar { display: none; }
+
+    .home-panel { display: none; }
+    .home-panel.active {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100%; padding: 40px 24px;
+    }
+    .home-center {
+      max-width: 560px; width: 100%; text-align: center;
+    }
+    .home-logo { font-size: 56px; margin-bottom: 14px; line-height: 1; }
+    .home-title {
+      font-size: 30px; font-weight: 800; letter-spacing: -.03em;
+      color: var(--midnight); margin-bottom: 6px;
+    }
+    .home-sub {
+      font-size: 14px; color: var(--text-muted); margin-bottom: 28px;
+    }
+    .home-agenda {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 22px;
+      margin-bottom: 22px; text-align: left;
+    }
+    .home-agenda-label {
+      font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--text-faint);
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .home-total-mins { font-size: 11px; font-weight: 600; color: var(--text-faint); letter-spacing: .04em; text-transform: none; }
+    .home-agenda-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0; border-bottom: 1px solid var(--border-light);
+    }
+    .home-agenda-row:last-child { border-bottom: none; }
+    .home-agenda-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--text-faint); flex-shrink: 0;
+    }
+    .home-agenda-name { flex: 1; font-size: 14px; font-weight: 500; }
+    .home-agenda-mins { font-size: 12.5px; color: var(--text-muted); }
+    .btn-home-start {
+      display: inline-block; padding: 14px 40px;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+      letter-spacing: .02em; background: var(--midnight); color: #fff;
+      border: none; border-radius: var(--radius); cursor: pointer;
+      transition: background .12s; width: 100%;
+    }
+    .btn-home-start:hover { background: #2a2a2a; }
+
+    /* ── SEGUE ───────────────────────────────────────────────────── */
+    .segue-prompt {
+      text-align: center; padding: 36px 24px 28px;
+    }
+    .segue-icon { font-size: 52px; margin-bottom: 14px; line-height: 1; }
+    .segue-heading {
+      font-size: 26px; font-weight: 800; letter-spacing: -.025em; margin-bottom: 10px;
+    }
+    .segue-sub {
+      font-size: 15px; color: var(--text-muted);
+      max-width: 460px; margin: 0 auto; line-height: 1.6;
+    }
+    .segue-roster {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center; margin-top: 28px;
+    }
+    .segue-person {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 18px 22px; background: var(--surface);
+      border: 2px solid var(--border); border-radius: var(--radius);
+      cursor: pointer; transition: all .15s; min-width: 108px;
+      user-select: none;
+    }
+    .segue-person:hover { border-color: var(--tulip); background: var(--tulip-pale); }
+    .segue-person.checked { border-color: var(--tulip); background: var(--tulip-pale); }
+    .segue-check {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s; font-size: 16px; color: transparent;
+    }
+    .segue-person.checked .segue-check {
+      background: var(--tulip); border-color: var(--tulip); color: #fff;
+    }
+    .segue-person.checked .segue-check::after { content: '✓'; }
+    .segue-name { font-size: 14px; font-weight: 600; }
+
+    /* ── RATING ──────────────────────────────────────────────────── */
+    .rating-intro {
+      text-align: center; padding: 24px 24px 20px;
+      font-size: 14px; color: var(--text-muted); line-height: 1.5;
+    }
+    .rating-grid {
+      display: flex; flex-direction: column; gap: 10px;
+      max-width: 540px; margin: 0 auto;
+    }
+    .rating-row {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 18px;
+    }
+    .rating-name {
+      font-size: 14.5px; font-weight: 600;
+      width: 110px; flex-shrink: 0;
+    }
+    .star-row { flex: 1; display: flex; gap: 2px; }
+    .star {
+      font-size: 30px; background: none; border: none; cursor: pointer;
+      color: var(--border); transition: color .08s; padding: 0 3px; line-height: 1;
+    }
+    .star:hover ~ .star { color: var(--border) !important; }
+    .star-row:hover .star { color: #f59e0b; }
+    .star-row:hover .star:hover ~ .star { color: var(--border); }
+    .star.active { color: #f59e0b; }
+    .rating-val {
+      font-size: 13px; font-weight: 600; color: var(--text-muted);
+      min-width: 34px; text-align: right;
+    }
+    .rating-footer {
+      text-align: center; margin-top: 28px; padding-bottom: 24px;
+    }
+    .rating-logged {
+      font-size: 16px; font-weight: 600; color: var(--tulip-dark); padding: 16px;
+    }
     .capture-actions { display: flex; gap: 8px; margin-top: 10px; }

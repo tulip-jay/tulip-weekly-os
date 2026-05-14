@@ -12,13 +12,18 @@ function checkPassword() {
 
 /* ══ DATA ════════════════════════════════════════════════════════ */
 const SECTIONS = [
-  { name:'📊 Scorecard', shortName:'Scorecard', desc:'Call your KPIs — on track or off track. No debate.',               lead:'Everyone',  mins:10 },
-  { name:'🪨 Rocks',     shortName:'Rocks',     desc:'One sentence per rock. On track / off track / done.',               lead:'Owners',    mins:10 },
-  { name:'🎯 Goals',     shortName:'Goals',     desc:'Quick round — on track or not. One sentence each.',                 lead:'Everyone',  mins:10 },
-  { name:'💬 Discussion', shortName:'Discussion', desc:'Top 3 only. Identify → Discuss → Solve.',                          lead:'Everyone',  mins:25 },
-  { name:'✅ To-Dos',    shortName:'To-Dos',    desc:'Every commitment = owner + due date. Charlotte captures live.',     lead:'Charlotte', mins: 5 },
+  { name:'🎉 Segue',      shortName:'Segue',      desc:'Share one piece of good news — personal or professional.',            lead:'Everyone',  mins: 2 },
+  { name:'📊 Scorecard',  shortName:'Scorecard',  desc:'Call your KPIs — on track or off track. No debate.',                 lead:'Everyone',  mins:10 },
+  { name:'🪨 Rocks',      shortName:'Rocks',      desc:'One sentence per rock. On track / off track / done.',                 lead:'Owners',    mins:10 },
+  { name:'🎯 Goals',      shortName:'Goals',      desc:'Quick round — on track or not. One sentence each.',                   lead:'Everyone',  mins:10 },
+  { name:'💬 Discussion', shortName:'Discussion', desc:'Top 3 only. Identify → Discuss → Solve.',                             lead:'Everyone',  mins:25 },
+  { name:'✅ To-Dos',     shortName:'To-Dos',     desc:'Every commitment = owner + due date. Charlotte captures live.',       lead:'Charlotte', mins: 5 },
+  { name:'⭐ Rating',     shortName:'Rating',     desc:'Rate this week\'s meeting 1–5 for each team member.',                lead:'Everyone',  mins: 2 },
 ];
-let TOTAL_MINS = 60;
+let TOTAL_MINS = 64;
+
+const TEAM = ['Jay','Lori','Mike','Charlotte','Vendela','Bitty','Khreen'];
+let ratings = {};
 
 let rocks = [
   { id:0, title:'Reduce shipping / fulfillment cost structure', owner:'Jay + Charlotte', status:'off-track', lever:'↓ Cost',        done:'Cost/order below Q1 2025 baseline. Root cause complete. Fix actioned by June 30.', sheetRow:8 },
@@ -153,6 +158,8 @@ function init() {
   }
 
   buildNav();
+  renderSegue();
+  renderRating();
   renderRocks();
   renderGoals();
   renderIssues();
@@ -161,7 +168,7 @@ function init() {
   hideEmptyWeekCols();
   normalizeLatestCells();
   markLatestWeekHead();
-  goToSection(0);
+  showHomepage();
   if (SYNC_URL) {
     if (elSyncLabel) elSyncLabel.textContent = 'Connecting…';
     loadConfig();
@@ -196,6 +203,9 @@ function buildNav() {
 function goToSection(idx) {
   stopTimer();
   document.getElementById('done-overlay').classList.remove('show');
+  // Leave homepage mode
+  document.getElementById('panel-home').classList.remove('active');
+  document.body.classList.remove('home-mode');
   sectionTimers[currentIdx] = timerSecs; // save current section's remaining time
   currentIdx = idx;
   timerSecs  = sectionTimers[idx];       // restore target section's time
@@ -212,6 +222,117 @@ function goToSection(idx) {
   });
 
   renderTimer();
+}
+
+/* ══ HOMEPAGE ════════════════════════════════════════════════════ */
+function showHomepage() {
+  stopTimer();
+  document.body.classList.add('home-mode');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const hp = document.getElementById('panel-home');
+  if (hp) hp.classList.add('active');
+  buildHomepage();
+}
+
+function buildHomepage() {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  const dateEl = document.getElementById('home-date');
+  if (dateEl) dateEl.textContent = dateStr;
+  const totalMins = SECTIONS.reduce((s, x) => s + x.mins, 0);
+  const totalEl = document.getElementById('home-total-mins');
+  if (totalEl) totalEl.textContent = totalMins + 'm total';
+  const list = document.getElementById('home-agenda-list');
+  if (list) {
+    list.innerHTML = SECTIONS.map((s, i) => `
+      <div class="home-agenda-row">
+        <span class="home-agenda-num">${i+1}</span>
+        <span class="home-agenda-name">${s.name}</span>
+        <span class="home-agenda-mins">${s.mins}m</span>
+      </div>`).join('');
+  }
+}
+
+function startMeeting() {
+  goToSection(0);
+}
+
+/* ══ SEGUE ═══════════════════════════════════════════════════════ */
+function renderSegue() {
+  const c = document.getElementById('segue-container');
+  if (!c) return;
+  c.innerHTML = `
+    <div class="segue-prompt">
+      <div class="segue-icon">🎉</div>
+      <div class="segue-heading">Good News Round</div>
+      <div class="segue-sub">Go around the table — each person shares one piece of good news, personal or professional.</div>
+    </div>
+    <div class="segue-roster">
+      ${TEAM.map(name => `
+        <div class="segue-person" id="segue-person-${name}" onclick="toggleSegueCheck('${name}')">
+          <div class="segue-check"></div>
+          <div class="segue-name">${name}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function toggleSegueCheck(name) {
+  const el = document.getElementById('segue-person-' + name);
+  if (el) el.classList.toggle('checked');
+}
+
+/* ══ RATING ══════════════════════════════════════════════════════ */
+function renderRating() {
+  const c = document.getElementById('rating-container');
+  if (!c) return;
+  c.innerHTML = `
+    <div class="rating-intro">
+      <p>Rate this week's meeting for each team member (1 = needs work · 5 = excellent)</p>
+    </div>
+    <div class="rating-grid">
+      ${TEAM.map(name => `
+        <div class="rating-row">
+          <div class="rating-name">${name}</div>
+          <div class="star-row" id="stars-${name}">
+            ${[1,2,3,4,5].map(n => `<button class="star" onclick="setRating('${name}',${n})" data-n="${n}">★</button>`).join('')}
+          </div>
+          <div class="rating-val" id="rval-${name}">—</div>
+        </div>`).join('')}
+    </div>
+    <div class="rating-footer">
+      <button class="btn btn-primary" onclick="logMeeting()">Log Meeting →</button>
+    </div>`;
+}
+
+function setRating(name, n) {
+  ratings[name] = n;
+  const row = document.getElementById('stars-' + name);
+  if (row) row.querySelectorAll('.star').forEach((btn, i) => btn.classList.toggle('active', i < n));
+  const val = document.getElementById('rval-' + name);
+  if (val) val.textContent = n + '/5';
+}
+
+function logMeeting() {
+  const today    = new Date();
+  const week     = today.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const m        = Math.floor(totalElapsed / 60);
+  const s        = totalElapsed % 60;
+  const totalTime= `${m}:${s.toString().padStart(2,'0')}`;
+  sync({
+    action:    'logHistory',
+    week:       week,
+    totalTime:  totalTime,
+    jay:        ratings['Jay']       || '',
+    lori:       ratings['Lori']      || '',
+    mike:       ratings['Mike']      || '',
+    charlotte:  ratings['Charlotte'] || '',
+    vendela:    ratings['Vendela']   || '',
+    bitty:      ratings['Bitty']     || '',
+    khreen:     ratings['Khreen']    || '',
+    recording:  '',
+  });
+  const footer = document.querySelector('.rating-footer');
+  if (footer) footer.innerHTML = '<div class="rating-logged">✅ Meeting logged to History sheet!</div>';
 }
 
 /* ══ ROCKS ═══════════════════════════════════════════════════════ */
