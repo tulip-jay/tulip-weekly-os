@@ -538,58 +538,38 @@
     .capture-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .capture-row input, .capture-row select { margin-bottom: 0; flex: 1; min-width: 0; }
 
-    /* ── HOMEPAGE ────────────────────────────────────────────────── */
-    body.home-mode .topbar { display: none; }
-
-    .home-panel { display: none; }
-    .home-panel.active {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      min-height: 100%; padding: 40px 24px;
+    /* ── HOMEPAGE (fixed full-screen overlay) ───────────────────── */
+    .home-panel {
+      display: none;
+      position: fixed; inset: 0; z-index: 999;
+      background: var(--bg);
+      flex-direction: column; align-items: center; justify-content: center;
     }
+    .home-panel.active { display: flex; }
     .home-center {
-      max-width: 560px; width: 100%; text-align: center;
+      max-width: 420px; width: 100%; text-align: center; padding: 0 24px;
     }
-    .home-logo { font-size: 56px; margin-bottom: 14px; line-height: 1; }
+    .home-logo { font-size: 52px; margin-bottom: 20px; line-height: 1; }
+    .home-brand {
+      font-size: 11px; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px;
+    }
     .home-title {
-      font-size: 30px; font-weight: 800; letter-spacing: -.03em;
-      color: var(--midnight); margin-bottom: 6px;
+      font-size: 32px; font-weight: 800; letter-spacing: -.03em;
+      color: var(--midnight); line-height: 1.2; margin-bottom: 10px;
     }
-    .home-sub {
-      font-size: 14px; color: var(--text-muted); margin-bottom: 28px;
+    .home-date {
+      font-size: 15px; color: var(--text-muted); margin-bottom: 40px;
+      font-weight: 500;
     }
-    .home-agenda {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 18px 22px;
-      margin-bottom: 22px; text-align: left;
-    }
-    .home-agenda-label {
-      font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
-      text-transform: uppercase; color: var(--text-faint);
-      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
-    }
-    .home-total-mins { font-size: 11px; font-weight: 600; color: var(--text-faint); letter-spacing: .04em; text-transform: none; }
-    .home-agenda-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 9px 0; border-bottom: 1px solid var(--border-light);
-    }
-    .home-agenda-row:last-child { border-bottom: none; }
-    .home-agenda-num {
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--bg); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; color: var(--text-faint); flex-shrink: 0;
-    }
-    .home-agenda-name { flex: 1; font-size: 14px; font-weight: 500; }
-    .home-agenda-mins { font-size: 12.5px; color: var(--text-muted); }
     .btn-home-start {
-      display: inline-block; padding: 14px 40px;
+      display: block; width: 100%; padding: 16px 40px;
       font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
-      letter-spacing: .02em; background: var(--midnight); color: #fff;
+      letter-spacing: .03em; background: var(--midnight); color: #fff;
       border: none; border-radius: var(--radius); cursor: pointer;
-      transition: background .12s; width: 100%;
+      transition: background .12s, transform .1s;
     }
-    .btn-home-start:hover { background: #2a2a2a; }
+    .btn-home-start:hover { background: #2a2a2a; transform: translateY(-1px); }
 
     /* ── SEGUE ───────────────────────────────────────────────────── */
     .segue-prompt {
@@ -649,12 +629,10 @@
     .star-row { flex: 1; display: flex; gap: 2px; }
     .star {
       font-size: 30px; background: none; border: none; cursor: pointer;
-      color: var(--border); transition: color .08s; padding: 0 3px; line-height: 1;
+      color: var(--border); padding: 0 3px; line-height: 1;
     }
-    .star:hover ~ .star { color: var(--border) !important; }
-    .star-row:hover .star { color: #f59e0b; }
-    .star-row:hover .star:hover ~ .star { color: var(--border); }
-    .star.active { color: #f59e0b; }
+    .star.active   { color: #f59e0b; }
+    .star.hovered  { color: #f59e0b; }
     .rating-val {
       font-size: 13px; font-weight: 600; color: var(--text-muted);
       min-width: 34px; text-align: right;

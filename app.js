@@ -203,9 +203,8 @@ function buildNav() {
 function goToSection(idx) {
   stopTimer();
   document.getElementById('done-overlay').classList.remove('show');
-  // Leave homepage mode
+  // Dismiss homepage overlay
   document.getElementById('panel-home').classList.remove('active');
-  document.body.classList.remove('home-mode');
   sectionTimers[currentIdx] = timerSecs; // save current section's remaining time
   currentIdx = idx;
   timerSecs  = sectionTimers[idx];       // restore target section's time
@@ -227,7 +226,6 @@ function goToSection(idx) {
 /* ══ HOMEPAGE ════════════════════════════════════════════════════ */
 function showHomepage() {
   stopTimer();
-  document.body.classList.add('home-mode');
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   const hp = document.getElementById('panel-home');
   if (hp) hp.classList.add('active');
@@ -239,18 +237,6 @@ function buildHomepage() {
   const dateStr = today.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
   const dateEl = document.getElementById('home-date');
   if (dateEl) dateEl.textContent = dateStr;
-  const totalMins = SECTIONS.reduce((s, x) => s + x.mins, 0);
-  const totalEl = document.getElementById('home-total-mins');
-  if (totalEl) totalEl.textContent = totalMins + 'm total';
-  const list = document.getElementById('home-agenda-list');
-  if (list) {
-    list.innerHTML = SECTIONS.map((s, i) => `
-      <div class="home-agenda-row">
-        <span class="home-agenda-num">${i+1}</span>
-        <span class="home-agenda-name">${s.name}</span>
-        <span class="home-agenda-mins">${s.mins}m</span>
-      </div>`).join('');
-  }
 }
 
 function startMeeting() {
@@ -287,14 +273,20 @@ function renderRating() {
   if (!c) return;
   c.innerHTML = `
     <div class="rating-intro">
-      <p>Rate this week's meeting for each team member (1 = needs work · 5 = excellent)</p>
+      <p>Rate this week's meeting 1–5 for each team member<br>
+         <span style="font-size:12.5px;color:var(--text-faint)">1 = needs work &nbsp;·&nbsp; 5 = excellent</span>
+      </p>
     </div>
     <div class="rating-grid">
       ${TEAM.map(name => `
         <div class="rating-row">
           <div class="rating-name">${name}</div>
-          <div class="star-row" id="stars-${name}">
-            ${[1,2,3,4,5].map(n => `<button class="star" onclick="setRating('${name}',${n})" data-n="${n}">★</button>`).join('')}
+          <div class="star-row" id="stars-${name}" onmouseleave="unhoverRating('${name}')">
+            ${[1,2,3,4,5].map(n =>
+              `<button class="star"
+                 onclick="setRating('${name}',${n})"
+                 onmouseenter="hoverRating('${name}',${n})">★</button>`
+            ).join('')}
           </div>
           <div class="rating-val" id="rval-${name}">—</div>
         </div>`).join('')}
@@ -307,9 +299,24 @@ function renderRating() {
 function setRating(name, n) {
   ratings[name] = n;
   const row = document.getElementById('stars-' + name);
-  if (row) row.querySelectorAll('.star').forEach((btn, i) => btn.classList.toggle('active', i < n));
+  if (row) row.querySelectorAll('.star').forEach((btn, i) => {
+    btn.classList.toggle('active', i < n);
+    btn.classList.remove('hovered');
+  });
   const val = document.getElementById('rval-' + name);
   if (val) val.textContent = n + '/5';
+}
+
+function hoverRating(name, n) {
+  const row = document.getElementById('stars-' + name);
+  if (!row) return;
+  row.querySelectorAll('.star').forEach((btn, i) => btn.classList.toggle('hovered', i < n));
+}
+
+function unhoverRating(name) {
+  const row = document.getElementById('stars-' + name);
+  if (!row) return;
+  row.querySelectorAll('.star').forEach(btn => btn.classList.remove('hovered'));
 }
 
 function logMeeting() {
