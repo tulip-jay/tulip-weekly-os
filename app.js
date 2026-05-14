@@ -22,7 +22,7 @@ const SECTIONS = [
 ];
 let TOTAL_MINS = 64;
 
-const TEAM = ['Jay','Lori','Mike','Charlotte','Vendela','Bitty','Khreen'];
+const TEAM = ['Bitty','Charlotte','Jay','Lori','Mike','Vendela'];
 let ratings = {};
 
 let rocks = [
@@ -103,14 +103,12 @@ function startTimer() {
   if (timerRunning) return;
   if (!meetingTick) meetingTick = setInterval(tickMeeting, 1000);
   timerRunning = true;
-  document.getElementById('btn-startstop').textContent = 'Pause';
   timerInterval = setInterval(() => { timerSecs--; sectionTimers[currentIdx] = timerSecs; renderTimer(); }, 1000);
 }
 
 function stopTimer() {
   timerRunning = false;
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  document.getElementById('btn-startstop').textContent = 'Start';
 }
 
 function tickMeeting() {
@@ -201,6 +199,7 @@ function buildNav() {
 }
 
 function goToSection(idx) {
+  const meetingInProgress = meetingTick !== null;
   stopTimer();
   document.getElementById('done-overlay').classList.remove('show');
   // Dismiss homepage overlay
@@ -220,7 +219,14 @@ function goToSection(idx) {
     btn.querySelector('.sec-num').textContent = (sectionDone[i] && i!==idx) ? '✓' : (i+1);
   });
 
+  // On the Rating section (last), hide the timer block — no countdown needed there
+  const isRating = idx === SECTIONS.length - 1;
+  const timerBlock = document.querySelector('.timer-block');
+  if (timerBlock) timerBlock.style.display = isRating ? 'none' : '';
+
   renderTimer();
+  // Auto-continue timer when navigating mid-meeting
+  if (meetingInProgress) startTimer();
 }
 
 /* ══ HOMEPAGE ════════════════════════════════════════════════════ */
@@ -233,14 +239,20 @@ function showHomepage() {
 }
 
 function buildHomepage() {
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  // Use the meeting date from the sidebar brand-sub ("Weekly All Hands · May 12, 2026")
+  const brandSub = document.querySelector('.brand-sub');
+  let dateStr = '';
+  if (brandSub) {
+    const parts = brandSub.textContent.split('·');
+    if (parts.length > 1) dateStr = parts.slice(1).join('·').trim();
+  }
   const dateEl = document.getElementById('home-date');
-  if (dateEl) dateEl.textContent = dateStr;
+  if (dateEl) dateEl.textContent = dateStr || new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 }
 
 function startMeeting() {
   goToSection(0);
+  startTimer(); // auto-start on meeting begin
 }
 
 /* ══ SEGUE ═══════════════════════════════════════════════════════ */
@@ -251,20 +263,8 @@ function renderSegue() {
     <div class="segue-prompt">
       <div class="segue-icon">🎉</div>
       <div class="segue-heading">Good News Round</div>
-      <div class="segue-sub">Go around the table — each person shares one piece of good news, personal or professional.</div>
-    </div>
-    <div class="segue-roster">
-      ${TEAM.map(name => `
-        <div class="segue-person" id="segue-person-${name}" onclick="toggleSegueCheck('${name}')">
-          <div class="segue-check"></div>
-          <div class="segue-name">${name}</div>
-        </div>`).join('')}
+      <div class="segue-sub">Anyone who wants to share — share one piece of good news. Personal or professional, anything goes.</div>
     </div>`;
-}
-
-function toggleSegueCheck(name) {
-  const el = document.getElementById('segue-person-' + name);
-  if (el) el.classList.toggle('checked');
 }
 
 /* ══ RATING ══════════════════════════════════════════════════════ */
@@ -320,26 +320,34 @@ function unhoverRating(name) {
 }
 
 function logMeeting() {
-  const today    = new Date();
-  const week     = today.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-  const m        = Math.floor(totalElapsed / 60);
-  const s        = totalElapsed % 60;
-  const totalTime= `${m}:${s.toString().padStart(2,'0')}`;
+  const today     = new Date();
+  const week      = today.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const m         = Math.floor(totalElapsed / 60);
+  const s         = totalElapsed % 60;
+  const totalTime = `${m}:${s.toString().padStart(2,'0')}`;
+
+  // Compute average of all entered ratings
+  const vals = TEAM.map(n => ratings[n]).filter(r => r > 0);
+  const avg  = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '';
+
   sync({
     action:    'logHistory',
     week:       week,
     totalTime:  totalTime,
+    average:    avg,
+    bitty:      ratings['Bitty']     || '',
+    charlotte:  ratings['Charlotte'] || '',
     jay:        ratings['Jay']       || '',
     lori:       ratings['Lori']      || '',
     mike:       ratings['Mike']      || '',
-    charlotte:  ratings['Charlotte'] || '',
     vendela:    ratings['Vendela']   || '',
-    bitty:      ratings['Bitty']     || '',
-    khreen:     ratings['Khreen']    || '',
     recording:  '',
   });
-  const footer = document.querySelector('.rating-footer');
-  if (footer) footer.innerHTML = '<div class="rating-logged">✅ Meeting logged to History sheet!</div>';
+
+  // Stop meeting clock and show the complete overlay
+  if (meetingTick) { clearInterval(meetingTick); meetingTick = null; }
+  stopTimer();
+  document.getElementById('done-overlay').classList.add('show');
 }
 
 /* ══ ROCKS ═══════════════════════════════════════════════════════ */
