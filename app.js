@@ -96,10 +96,6 @@ function renderTimer() {
   }
 }
 
-function toggleTimer() {
-  timerRunning ? stopTimer() : startTimer();
-}
-
 function startTimer() {
   if (timerRunning) return;
   if (!meetingTick) meetingTick = setInterval(tickMeeting, 1000);
@@ -278,6 +274,10 @@ function buildHomepage() {
   }
   const dateEl = document.getElementById('home-date');
   if (dateEl) dateEl.textContent = dateStr || new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+
+  // Update agenda meta line with live values
+  const metaEl = document.getElementById('home-meta');
+  if (metaEl) metaEl.textContent = `${TOTAL_MINS} min · ${SECTIONS.length} sections`;
 }
 
 function startMeeting() {
@@ -1058,6 +1058,9 @@ function applyConfig(rows) {
     renderTimer();
   }
   buildNav();
+  // Keep home-meta in sync if it's rendered
+  const metaEl = document.getElementById('home-meta');
+  if (metaEl) metaEl.textContent = `${TOTAL_MINS} min · ${SECTIONS.length} sections`;
 }
 
 function loadFromSheets() {
@@ -1227,7 +1230,7 @@ function applyTodos(rows) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeCapture(); return; }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.code === 'Space')      { e.preventDefault(); toggleTimer(); }
+  if (e.code === 'Space')      { e.preventDefault(); timerRunning ? stopTimer() : startTimer(); }
   if (e.code === 'ArrowRight') nextSection();
   if (e.code === 'ArrowLeft' && currentIdx > 0) goToSection(currentIdx - 1);
 });
